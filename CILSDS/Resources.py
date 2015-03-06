@@ -33,6 +33,7 @@ def CreateResources(gc):
     gc.brush['default'] = gc.brush['none']
     gc.brush['back'] = gc.CreateBrush(wx.BLACK_BRUSH)
     gc.brush['button'] = gc.brush['none']
+    gc.brush['green'] = gc.CreateBrush(wx.Brush(wx.GREEN))
     gc.brush['ground'] = gc.CreateBrush(wx.Brush(wx.Colour(0x7D,0x3B,0x42)))
     gc.brush['sky'] = gc.CreateBrush(wx.Brush(wx.Colour(0x23,0x51,0x7C)))
     gc.font = {}
