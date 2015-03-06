@@ -12,6 +12,25 @@ class HeadPanel(Panel) :
 
     def SetTitle(self, title) :
         self.title = title
+        if title in self.mgr.header_panels :
+           self.panels = [self.mgr.header_panels[self.title]]
+           self.panels[0].SetPosition(0,0, self.w, self.h)
+        else :
+           self.panels = []
+
+    def Layout(self) :
+        if len(self.panels) :
+            self.panels[0].SetPosition(0,0, self.w, self.h)
+        Panel.Layout(self)
+
+    def Draw(self) :
+        if self.visable and len(self.panels) :
+            self.panels[0].SetPosition(0,0, self.w, self.h)
+            self.panels[0].Layout()
+            self.BeginDraw(drawBoarder=False)
+            self.EndDraw()
+        else :
+            Panel.Draw(self)
 
 class BodyPanel(Panel) :
     def __init__(self, parent, mgr, title) :
@@ -68,9 +87,18 @@ class MiniPanel(Panel) :
             self.panels[0].SetPosition(0,0, self.w, self.h)
             self.panels[0].Layout()
             self.BeginDraw(drawBoarder=False)
+            gc = self.gc
+            gc.SetFont(gc.font['green12'])
+            te = gc.GetTextExtent(self.title)
+            gc.DrawText(self.title, (self.w-te[0])/2, self.h-te[1])
             self.EndDraw()
         else :
-            Panel.Draw(self)
+            self.BeginDraw(drawBoarder=True)
+            gc = self.gc
+            gc.SetFont(gc.font['green12'])
+            te = gc.GetTextExtent(self.title)
+            gc.DrawText(self.title, (self.w-te[0])/2, self.h-te[1])
+            self.EndDraw()
 
     def OnClick(self, x, y) :
         if self.visable:

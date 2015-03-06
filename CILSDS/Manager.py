@@ -10,6 +10,8 @@ from Window import Window
 from Resources import CreateResources
 from EFI import EFI
 from SMS import SMS
+from Header1 import Header1
+from Header2 import Header2
 
 class Manager(wx.Panel):
     def __init__(self, parent, log):
@@ -36,12 +38,21 @@ class Manager(wx.Panel):
         'roll' : -8,
         'heading' : 7,
         'ROC' : -100,
+        'lat' : 64.4,
+        'lon' : 121.8,
+        'throttle' : 0,
+        'fuelrate' : 0,
+        'T' : 0,
         }
 
         self.mini_panels = {}
         self.body_panels = { \
                 'EFI':EFI(self), \
                 'SMS':SMS(self) \
+                }
+        self.header_panels = { \
+                'H1':Header1(self), \
+                'H2':Header2(self) \
                 }
 
         self.Body0 = Window(self,0, 0, 0, 640, 512, 1, \
