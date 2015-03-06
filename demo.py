@@ -100,7 +100,9 @@ class MyFrame(wx.Frame):
                         os.chdir(args.cwd)
                         self.log.info('Change current work directory to '+args.cwd)
                     if args.cmd :
-                        self.ac = Popen(args.cmd+' --mfdport {} '.format(sockname[1]), shell=False, bufsize=-1)
+                        cmd = args.cmd+' --mfdport {}'.format(sockname[1])
+                        self.ac = Popen(cmd, shell=False, bufsize=-1)
+                        self.log.info('Running '+cmd)
                     else :
                         self.ac = None
                 except :

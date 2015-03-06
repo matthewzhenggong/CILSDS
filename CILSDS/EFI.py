@@ -4,7 +4,7 @@
 from Panel import Panel
 from Control import Control
 
-from math import pi,sqrt
+from math import pi,sqrt,sin,cos
 
 class ArtificialHorizon(Control) :
     def __init__(self, parent) :
@@ -14,6 +14,64 @@ class ArtificialHorizon(Control) :
         self.heading = 3
         self.AoA=2
         self.AoS=1
+
+    def RebuildPath(self) :
+        if self.gc :
+            gc = self.gc
+            gl = gc.CreatePath()
+            sl = gc.CreatePath()
+            w = self.w
+            scale = w/30
+            for i in range(5,95,5) :
+                ss = i*scale
+                gl.MoveToPoint(w/10,-4+ss)
+                gl.AddLineToPoint(w/10,ss)
+                gl.AddLineToPoint(w*3/10,ss)
+                gl.MoveToPoint(-w/10,-4+ss)
+                gl.AddLineToPoint(-w/10,ss)
+                gl.AddLineToPoint(-w*3/10,ss)
+                ss = -i*scale
+                sl.MoveToPoint(w/10,ss)
+                sl.AddLineToPoint(w*3/10,ss)
+                sl.AddLineToPoint(w*3/10,ss+4)
+                sl.MoveToPoint(-w/10,ss)
+                sl.AddLineToPoint(-w*3/10,ss)
+                sl.AddLineToPoint(-w*3/10,ss+4)
+            self.ground_ladder = gl
+            self.sky_ladder = sl
+
+            ws = gc.CreatePath()
+            ws.MoveToPoint(-16,0)
+            ws.AddLineToPoint(-7.5,0)
+            ws.AddLineToPoint(-4.5,7)
+            ws.AddLineToPoint(0,0)
+            ws.AddLineToPoint(4.5,7)
+            ws.AddLineToPoint(7.5,0)
+            ws.AddLineToPoint(16,0)
+            self.w_symbol = ws
+
+            h = self.h
+            rs = gc.CreatePath()
+            rs.MoveToPoint(2,h*0.40)
+            rs.AddLineToPoint(0,h*0.37)
+            rs.AddLineToPoint(-2,h*0.4)
+            self.roll_symbol = rs
+
+            ps = gc.CreatePath()
+            ps.AddCircle(0, 0, 4)
+            ps.MoveToPoint(0,-4)
+            ps.AddLineToPoint(0,-12)
+            ps.MoveToPoint(4,0)
+            ps.AddLineToPoint(12,0)
+            ps.MoveToPoint(-4,0)
+            ps.AddLineToPoint(-12,0)
+            self.airplane_symbol = ps
+        else :
+            self.ground_ladder = None
+            self.sky_ladder = None
+            self.w_symbol = None
+            self.roll_symbol = None
+            self.airplane_symbol = None
 
     def Draw(self) :
         self.BeginDraw()
@@ -29,73 +87,64 @@ class ArtificialHorizon(Control) :
 
         gc.PushState()
         scale = w/30
-        gc.Rotate(-self.roll/57.3)
-        gc.Translate(0,self.pitch*scale)
+        roll_rad = self.roll/57.3
+        gc.Rotate(-roll_rad)
+        gc.Translate((self.AoS*cos(-roll_rad)+self.AoA*sin(-roll_rad))*scale,self.pitch*scale)
 
+        #ground
         gc.SetPen(gc.pen['white'])
         gc.SetBrush(gc.brush['ground'])
-        gc.DrawRectangle(-r,0,2*r,r+90*scale)
+        gc.DrawRectangle(-r-90*scale,0,2*r+180*scale,r+90*scale)
 
         gc.SetPen(gc.pen['white_sto'])
         gc.SetFont(gc.font['white10'])
-        l = gc.CreatePath()
         gc.PushState()
         for i in range(5,95,5) :
             gc.Translate(0, 5*scale)
-            ss = i*scale
-            l.MoveToPoint(w/10,-4+ss)
-            l.AddLineToPoint(w/10,ss)
-            l.AddLineToPoint(w*3/10,ss)
-            l.MoveToPoint(-w/10,-4+ss)
-            l.AddLineToPoint(-w/10,ss)
-            l.AddLineToPoint(-w*3/10,ss)
-            gc.DrawText('{:<3d}'.format(-i),w*3/10+5,-5)
-            gc.DrawText('{:>3d}'.format(-i),-w*3/10-25,-5)
+            if abs(self.pitch + i) < h*0.5/scale :
+                gc.DrawText('{:<3d}'.format(-i),w*3/10+5,-5)
+                gc.DrawText('{:>3d}'.format(-i),-w*3/10-25,-5)
         gc.PopState()
-        gc.StrokePath(l)
+        gc.StrokePath(self.ground_ladder)
 
+        #sky
         gc.SetPen(gc.pen['white'])
         gc.SetBrush(gc.brush['sky'])
-        gc.DrawRectangle(-r,-r-90*scale,2*r,r+90*scale)
+        gc.DrawRectangle(-r-90*scale,-r-90*scale,2*r+180*scale,r+90*scale)
 
-        l = gc.CreatePath()
         gc.PushState()
         for i in range(5,95,5) :
             gc.Translate(0, -5*scale)
-            ss = -i*scale
-            l.MoveToPoint(w/10,ss)
-            l.AddLineToPoint(w*3/10,ss)
-            l.AddLineToPoint(w*3/10,ss+4)
-            l.MoveToPoint(-w/10,ss)
-            l.AddLineToPoint(-w*3/10,ss)
-            l.AddLineToPoint(-w*3/10,ss+4)
-            gc.DrawText('{:<3d}'.format(i),w*3/10+5,-5)
-            gc.DrawText('{:>3d}'.format(i),-w*3/10-25,-5)
+            if abs(self.pitch - i) < h*0.5/scale :
+                gc.DrawText('{:<3d}'.format(i),w*3/10+5,-5)
+                gc.DrawText('{:>3d}'.format(i),-w*3/10-25,-5)
         gc.PopState()
-        gc.StrokePath(l)
+        gc.StrokePath(self.sky_ladder)
 
         gc.PopState()
-
-        gc.SetBrush(gc.brush['none'])
 
         gc.PushState()
-        gc.Rotate(-30/57.3)
-        gc.StrokeLine(0,h*0.35,0,h*0.4)
-        for i in range(6) :
+        gc.Rotate(-180/57.3)
+        for i in range(36) :
+            ang =-i*10+180
+            if ang - self.roll > 180 :
+                ang -= 360
+            elif ang - self.roll < -180 :
+                ang += 360
+            if ang < 45 and ang > -45 or abs(ang-self.roll)<30 :
+                if i % 3 == 0 :
+                    gc.StrokeLine(0,h*0.32,0,h*0.37)
+                elif ang < 45 and ang > -45 :
+                    gc.StrokeLine(0,h*0.34,0,h*0.37)
             gc.Rotate(10/57.3)
-            if i % 3 == 2 :
-                gc.StrokeLine(0,h*0.35,0,h*0.4)
-            else :
-                gc.StrokeLine(0,h*0.37,0,h*0.4)
         gc.PopState()
 
-        if abs(self.roll) < 35 :
-            gc.PushState()
-            gc.Rotate(-self.roll/57.3)
-            gc.StrokeLines([(2,h*0.43),(0,h*0.4),(-2,h*0.43)])
-            gc.PopState()
+        gc.PushState()
+        gc.Rotate(-self.roll/57.3)
+        gc.StrokePath(self.roll_symbol)
+        gc.PopState()
 
-        gc.StrokeLines([(-16,0),(-7.5,0),(-4.5,7),(0,0),(4.5,7),(7.5,0),(16,0)])
+        gc.StrokePath(self.w_symbol)
 
         gc.SetFont(gc.font['default'])
         txt = '{:03.0f}'.format(self.heading)
@@ -104,13 +153,11 @@ class ArtificialHorizon(Control) :
 
         gc.SetPen(gc.pen['white1'])
         gc.Translate(self.AoS*scale, self.AoA*scale)
-        gc.DrawEllipse(-4, -4, 8, 8)
-        gc.StrokeLine(0,-4,0,-12)
-        gc.StrokeLine(4,0,12,0)
-        gc.StrokeLine(-4,0,-12,0)
+        gc.StrokePath(self.airplane_symbol)
 
         gc.PopState()
         gc.ResetClip()
+        gc.SetBrush(gc.brush['none'])
         gc.SetPen(gc.pen['white'])
         gc.DrawRectangle(0,0,w,h)
 
@@ -122,25 +169,43 @@ class Clock(Control) :
         self.val = 500
         self.circle = 100.0
 
+    def RebuildPath(self) :
+        if self.gc :
+            gc = self.gc
+            r = self.w/2 if self.w<self.h else self.h/2
+            r2 = r*0.9
+            cs = gc.CreatePath()
+            for i in xrange(10) :
+                a = (pi/5.0)*i
+                sa = sin(a)
+                ca = cos(a)
+                cs.MoveToPoint(r*sa,r*ca)
+                cs.AddLineToPoint(r2*sa,r2*ca)
+            self.clock_symbol = cs
+            ps = gc.CreatePath()
+            ps.MoveToPoint(0,-0.5*r)
+            ps.AddLineToPoint(0,-0.9*r)
+            ps.AddLineToPoint(2,-0.7*r)
+            ps.AddLineToPoint(-2,-0.7*r)
+            ps.AddLineToPoint(0,-0.9*r)
+            self.pointer_symbol = ps
+        else :
+            self.clock_symbol = None
+            self.pointer_symbol = None
+
     def Draw(self) :
         self.BeginDraw()
 
         gc = self.gc
         gc.Translate(self.w/2,self.h/2)
 
-        r = self.w/2 if self.w<self.h else self.h/2
-
         gc.SetPen(gc.pen['white'])
-        gc.PushState()
-        gc.StrokeLine(0,-r,0,r*-0.9)
-        for i in xrange(9) :
-            gc.Rotate(pi/5.0)
-            gc.StrokeLine(0,-r,0,r*-0.9)
-        gc.PopState()
+
+        gc.StrokePath(self.clock_symbol)
 
         gc.PushState()
         gc.Rotate((self.val%self.circle)*2*pi/self.circle)
-        gc.StrokeLines([(0,-0.5*r),(0,-0.9*r),(3,-0.7*r),(-3,-0.7*r),(0,-0.9*r)])
+        gc.StrokePath(self.pointer_symbol)
         gc.PopState()
 
         gc.SetFont(gc.font['default'])
@@ -154,6 +219,73 @@ class Compass(Control) :
     def __init__(self, parent) :
         Control.__init__(self, parent)
         self.val = 0
+
+    def RebuildPath(self) :
+        if self.gc :
+            gc = self.gc
+
+            r = self.w/2-60 if self.w-120<self.h else self.h/2
+            if r < 75 :
+                r = 75
+            r2 = r*0.9
+            r3 = r*0.95
+
+            cs = gc.CreatePath()
+            cs.AddCircle(0, 0, r)
+            for i in xrange(60) :
+                a = (pi/30.0)*i
+                sa = sin(a)
+                ca = cos(a)
+                if i % 5 == 0 :
+                    cs.MoveToPoint(r*sa,r*ca)
+                    cs.AddLineToPoint(r2*sa,r2*ca)
+                else :
+                    cs.MoveToPoint(r*sa,r*ca)
+                    cs.AddLineToPoint(r3*sa,r3*ca)
+            self.compass_symbol = cs
+
+            y = -0.88*r+12
+            bs = gc.CreatePath()
+            bs.MoveToPoint(0,-15)
+            bs.AddLineToPoint(0,y)
+            bs.AddLineToPoint(2,y+6)
+            bs.AddLineToPoint(-2,y+6)
+            bs.AddLineToPoint(0,y)
+            bs.MoveToPoint(0,15)
+            bs.AddLineToPoint(0,-y)
+            self.arrow_symbol = bs
+
+            bs = gc.CreatePath()
+            bs.MoveToPoint(r/5,0)
+            bs.AddLineToPoint(r/5+1,0)
+            bs.MoveToPoint(r*2/5,0)
+            bs.AddLineToPoint(r*2/5+1,0)
+            bs.MoveToPoint(r*3/5,0)
+            bs.AddLineToPoint(r*3/5+1,0)
+            bs.MoveToPoint(-r/5,0)
+            bs.AddLineToPoint(-r/5-1,0)
+            bs.MoveToPoint(-r*2/5,0)
+            bs.AddLineToPoint(-r*2/5-1,0)
+            bs.MoveToPoint(-r*3/5,0)
+            bs.AddLineToPoint(-r*3/5-1,0)
+
+            bs.MoveToPoint(-r-30,-r/5)
+            bs.AddLineToPoint(-r-30,-r/5-1)
+            bs.MoveToPoint(-r-30,-r*2/5)
+            bs.AddLineToPoint(-r-30,-r*2/5-1)
+            bs.MoveToPoint(-r-30,-r*3/5)
+            bs.AddLineToPoint(-r-30,-r*3/5-1)
+            bs.MoveToPoint(-r-30,r/5)
+            bs.AddLineToPoint(-r-30,r/5+1)
+            bs.MoveToPoint(-r-30,r*2/5)
+            bs.AddLineToPoint(-r-30,r*2/5+1)
+            bs.MoveToPoint(-r-30,r*3/5)
+            bs.AddLineToPoint(-r-30,r*3/5+1)
+            self.bias_symbol = bs
+        else :
+            self.compass_symbol = None
+            self.arrow_symbol = None
+            self.bias_symbol = None
 
     def Draw(self) :
         self.BeginDraw()
@@ -172,44 +304,28 @@ class Compass(Control) :
         gc.DrawEllipse(-r, -r, 2*r, 2*r)
         gc.PushState()
         gc.Rotate(-self.val/57.3)
-        for i in xrange(360/6) :
-            if i % 5 == 0 :
-                if i == 0 :
-                    txt = 'N'
-                elif i == 90/6 :
-                    txt = 'E'
-                elif i == 180/6 :
-                    txt = 'S'
-                elif i == 270/6 :
-                    txt = 'W'
-                else :
-                    txt = '{:.0f}'.format(i*0.6)
-                te = gc.GetTextExtent(txt)
-                gc.DrawText(txt,-te[0]/2,-0.88*r)
-                gc.StrokeLine(0,-r,0,r*-0.9)
+        gc.StrokePath(self.compass_symbol)
+        for i in xrange(12) :
+            if i == 0 :
+                txt = 'N'
+            elif i == 3 :
+                txt = 'E'
+            elif i == 6 :
+                txt = 'S'
+            elif i == 9 :
+                txt = 'W'
             else :
-                gc.StrokeLine(0,-r,0,r*-0.95)
-            gc.Rotate(6*pi/180.0)
+                txt = '{:.0f}'.format(i*3)
+            te = gc.GetTextExtent(txt)
+            gc.DrawText(txt,-te[0]/2,-0.88*r)
+            gc.Rotate(pi/6.0)
         gc.PopState()
 
         gc.SetPen(gc.pen['purple'])
-        y = -0.88*r+te[1]
-        gc.StrokeLines([(0,-15),(0,y),(2,y+6),(-2,y+6),(0,y)])
-        gc.StrokeLine(0,15,0,-y)
-        gc.SetPen(gc.pen['big_purple'])
-        gc.StrokeLine(r/5,0,r/5+1,0)
-        gc.StrokeLine(r*2/5,0,r*2/5+1,0)
-        gc.StrokeLine(r*3/5,0,r*3/5+1,0)
-        gc.StrokeLine(-r/5,0,-r/5-1,0)
-        gc.StrokeLine(-r*2/5,0,-r*2/5-1,0)
-        gc.StrokeLine(-r*3/5,0,-r*3/5-1,0)
+        gc.StrokePath(self.arrow_symbol)
 
-        gc.StrokeLine(-r-30,-r/5,-r-30,-r/5-1)
-        gc.StrokeLine(-r-30,-r*2/5,-r-30,-r*2/5-1)
-        gc.StrokeLine(-r-30,-r*3/5,-r-30,-r*3/5-1)
-        gc.StrokeLine(-r-30,r/5,-r-30,r/5+1)
-        gc.StrokeLine(-r-30,r*2/5,-r-30,r*2/5+1)
-        gc.StrokeLine(-r-30,r*3/5,-r-30,r*3/5+1)
+        gc.SetPen(gc.pen['big_purple'])
+        gc.StrokePath(self.bias_symbol)
 
         txt = 'SLG'
         te = gc.GetTextExtent(txt)
@@ -278,7 +394,7 @@ class EFI(Panel) :
         gc.DrawText(u'GS{:4.0f}\nM {:4.2f}\nα{:4.1f}\nG {:4.1f}'.format(VG,Ma,AoA,GLoad),2,margin+margin/2+ahh/2)
         gc.DrawText(u'{:5.0f}'.format(ROC),margin+ahw+2,margin+margin/2+ahh/2+5)
         if AGL > 0 :
-            gc.DrawText(u'R{:4.0f}'.format(AGL),margin+ahw+2,margin+margin/2+ahh/2+20)
+            gc.DrawText(u'R{:5.0f}'.format(AGL),margin+ahw+2,margin+margin/2+ahh/2+20)
 
         gc.SetPen(gc.pen['white1'])
         if self.w > 320 :

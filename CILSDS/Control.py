@@ -12,12 +12,14 @@ class Control :
         self.visable = True
         self.touching = False
         self.click_func = None
+        self.gc = None
 
     def Visable(self, v) :
         self.visable = v
 
     def UpdateGC(self, gc) :
         self.gc = gc
+        self.RebuildPath()
 
     def SetClickFunc(self, func) :
         self.click_func = func
@@ -49,16 +51,20 @@ class Control :
     def EndDraw(self) :
         self.gc.PopState()
 
+    def RebuildPath(self) :
+        pass
+
     def SetSize(self, w, h) :
-        self.w = w
-        self.h = h
+        if w != self.w or h != self.h :
+            self.w = w
+            self.h = h
+            self.RebuildPath()
 
     def SetPosition(self, x, y, w, h) :
         self.visable = True
         self.x = x
         self.y = y
-        self.w = w
-        self.h = h
+        self.SetSize(w,h)
 
     def SetLeftTop(self, x, y) :
         self.visable = True
