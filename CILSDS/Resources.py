@@ -14,8 +14,8 @@ def CreateResources(gc):
     gc.pen = {}
     gc.pen['none'] = gc.CreatePen(wx.NullPen)
     gc.pen['default'] = gc.CreatePen(wx.Pen(wx.GREEN, 2, wx.PENSTYLE_SOLID))
-    gc.pen['panel_board'] = gc.pen['default']
-    gc.pen['act_panel_board'] = gc.CreatePen(wx.Pen(wx.Colour(0xCF,0xFF,0x50), 2))
+    gc.pen['panel_board'] = gc.CreatePen(wx.Pen(wx.GREEN, 1, wx.PENSTYLE_SOLID))
+    gc.pen['act_panel_board'] = gc.CreatePen(wx.Pen(wx.Colour(0xCF,0xFF,0x50), 3))
     gc.pen['focus'] = gc.CreatePen(wx.Pen(wx.WHITE, 1, wx.PENSTYLE_SHORT_DASH))
     gc.pen['clicking_cross'] = gc.CreatePen(wx.Pen(wx.RED, 2, wx.PENSTYLE_SHORT_DASH))
     gc.pen['button'] = gc.CreatePen(wx.Pen(wx.CYAN, 2, wx.PENSTYLE_SOLID))
@@ -34,21 +34,26 @@ def CreateResources(gc):
     gc.brush['back'] = gc.CreateBrush(wx.BLACK_BRUSH)
     gc.brush['button'] = gc.brush['none']
     gc.brush['green'] = gc.CreateBrush(wx.Brush(wx.GREEN))
+    gc.brush['white'] = gc.CreateBrush(wx.Brush(wx.WHITE))
     gc.brush['ground'] = gc.CreateBrush(wx.Brush(wx.Colour(0x7D,0x3B,0x42)))
     gc.brush['sky'] = gc.CreateBrush(wx.Brush(wx.Colour(0x23,0x51,0x7C)))
+    gc.brush['tab'] = gc.CreateBrush(wx.Brush(wx.Colour(0x00,0x00,0x00, 0x7E)))
     gc.font = {}
     font = [wx.Font(12, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD),
             wx.Font(20, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD),
             wx.Font(10, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL) ]
     gc.font['default'] = gc.CreateFont(font[0], wx.WHITE)
     gc.font['button'] = gc.font['default']
+    gc.font['tab'] = gc.CreateFont(font[0], wx.CYAN)
     gc.font['white12'] = gc.CreateFont(font[0], wx.WHITE)
     gc.font['white20'] = gc.CreateFont(font[1], wx.WHITE)
     gc.font['green12'] = gc.CreateFont(font[0], wx.GREEN)
+    gc.font['cyan12'] = gc.CreateFont(font[0], wx.CYAN)
     gc.font['menu_title'] = gc.font['green12']
     gc.font['menu_subtitle'] = gc.CreateFont(font[0], wx.Colour(0xCC,0x00,0xFF))
     gc.font['menu_text'] = gc.CreateFont(font[0], wx.CYAN)
     gc.font['white10'] = gc.CreateFont(font[2], wx.WHITE)
+    gc.font['green10'] = gc.CreateFont(font[2], wx.GREEN)
 
     gc.symbol_ac = [(0.015102934, -1.000386053),
 (0.202795457, -0.594298431),

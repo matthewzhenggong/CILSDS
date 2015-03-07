@@ -1,7 +1,7 @@
 #!/bin/env python
 # -*- coding: utf-8 -*-
 
-from Panel import Panel
+from Panel import Instrument
 from Control import Control
 
 from math import pi,sqrt,sin,cos
@@ -73,9 +73,7 @@ class ArtificialHorizon(Control) :
             self.roll_symbol = None
             self.airplane_symbol = None
 
-    def Draw(self) :
-        self.BeginDraw()
-
+    def DrawContent(self) :
         w = self.w
         h = self.h
         r = sqrt(w*w+h*w)
@@ -161,8 +159,6 @@ class ArtificialHorizon(Control) :
         gc.SetPen(gc.pen['white'])
         gc.DrawRectangle(0,0,w,h)
 
-        self.EndDraw()
-
 class Clock(Control) :
     def __init__(self, parent) :
         Control.__init__(self, parent)
@@ -193,9 +189,7 @@ class Clock(Control) :
             self.clock_symbol = None
             self.pointer_symbol = None
 
-    def Draw(self) :
-        self.BeginDraw()
-
+    def DrawContent(self) :
         gc = self.gc
         gc.Translate(self.w/2,self.h/2)
 
@@ -212,8 +206,6 @@ class Clock(Control) :
         txt = '{:.0f}'.format(self.val)
         te = gc.GetTextExtent(txt)
         gc.DrawText(txt,-te[0]/2,-te[1]/2)
-
-        self.EndDraw()
 
 class Compass(Control) :
     def __init__(self, parent) :
@@ -287,9 +279,7 @@ class Compass(Control) :
             self.arrow_symbol = None
             self.bias_symbol = None
 
-    def Draw(self) :
-        self.BeginDraw()
-
+    def DrawContent(self) :
         gc = self.gc
         gc.Clip(0,0,self.w,self.h)
 
@@ -335,12 +325,10 @@ class Compass(Control) :
         gc.DrawSymAC(gc,0,0,8,12)
 
         gc.ResetClip()
-        self.EndDraw()
 
-
-class EFI(Panel) :
+class EFI(Instrument) :
     def __init__(self, mgr) :
-        Panel.__init__(self, None, mgr)
+        Instrument.__init__(self, None, mgr)
         self.ctrls['AH'] = ArtificialHorizon(self)
         self.ctrls['V'] = Clock(self)
         self.ctrls['H'] = Clock(self)
@@ -364,8 +352,7 @@ class EFI(Panel) :
         else :
             self.ctrls['C'].SetPosition(0, margin+ahh, 320, self.h-margin-ahh)
 
-    def Draw(self) :
-        self.BeginDraw()
+    def DrawContent(self) :
 
         VC = self.mgr.data['VC']
         VG=self.mgr.data['VG']
@@ -412,7 +399,4 @@ class EFI(Panel) :
         self.ctrls['V'].val = VC
         self.ctrls['H'].val = ASL
         self.ctrls['C'].val = heading
-
-        self.EndDraw()
-
 

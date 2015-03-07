@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from Control import Control
-from Panel import Panel
+from Panel import Instrument
 from math import pi
 
 class Meter(Control) :
@@ -37,9 +37,7 @@ class Meter(Control) :
             self.cyc = None
             self.arr = None
 
-    def Draw(self) :
-        self.BeginDraw()
-
+    def DrawContent(self) :
         gc = self.gc
         gc.SetPen(gc.pen['green'])
         gc.SetFont(gc.font['green12'])
@@ -51,8 +49,6 @@ class Meter(Control) :
         gc.DrawText(txt,-r-te[0],r-te[1]/2)
         gc.Rotate(self.heading/57.3)
         gc.DrawPath(self.arr)
-
-        self.EndDraw()
 
 class ThrottleMeter(Control) :
     def __init__(self, parent) :
@@ -81,9 +77,7 @@ class ThrottleMeter(Control) :
             self.cyc = None
             self.arr = None
 
-    def Draw(self) :
-        self.BeginDraw()
-
+    def DrawContent(self) :
         gc = self.gc
         gc.SetPen(gc.pen['green'])
         gc.Translate(self.w/2, self.h/2)
@@ -109,41 +103,109 @@ class ThrottleMeter(Control) :
         gc.Rotate(throttle*pi*1.3+0.2*pi)
         gc.DrawPath(self.arr)
 
-        self.EndDraw()
+class SMS(Control) :
+    def __init__(self, parent) :
+        Control.__init__(self, parent)
+        self.sms = None
 
-class Header1(Panel) :
+    def DrawContent(self) :
+        if self.sms :
+            sms = self.sms
+            pylons = sms['pylons']
+            mrm = len(pylons['MRM'])
+            srm = len(pylons['SRM'])
+            gun = sms['GUN']
+            a2s  = len(pylons['AS'])
+            chat = sms['CHAT']
+            flat = sms['FLAT']
+
+            rdy = pylons['RDY']
+
+            gc = self.gc
+
+            flag = True
+            gc.SetPen(gc.pen['white'])
+            gc.SetBrush(gc.brush['none'])
+            for i in pylons['MRM'] :
+                if rdy == i[1] :
+                    gc.SetFont(gc.font['white10'])
+                    txt = '%1d MRM'%(mrm)
+                    te = gc.GetTextExtent(txt)
+                    gc.DrawRectangle(0-1,3-1,te[0]+2,te[1]+2)
+                    gc.DrawText(txt,0,3)
+                    flag = False
+                    break
+            if flag :
+                gc.SetFont(gc.font['green10'])
+                txt = '%1d MRM'%(mrm)
+                gc.DrawText(txt,0,3)
+
+            flag = True
+            for i in pylons['SRM'] :
+                if rdy == i[1] :
+                    gc.SetFont(gc.font['white10'])
+                    txt = '%1d SRM'%(srm)
+                    te = gc.GetTextExtent(txt)
+                    gc.DrawRectangle(0-1,3+15-1,te[0]+2,te[1]+2)
+                    gc.DrawText(txt,0,3+15)
+                    flag = False
+                    break
+            if flag :
+                gc.SetFont(gc.font['green10'])
+                txt = '%1d SRM'%(srm)
+                gc.DrawText(txt,0,3+15)
+
+            flag = True
+            for i in pylons['AS'] :
+                if rdy == i[1] :
+                    gc.SetFont(gc.font['white10'])
+                    txt = '%1d AS'%(a2s)
+                    te = gc.GetTextExtent(txt)
+                    gc.DrawRectangle(0-1,3+45-1,te[0]+2,te[1]+2)
+                    gc.DrawText(txt,0,3+45)
+                    flag = False
+                    break
+            if flag :
+                gc.SetFont(gc.font['green10'])
+                txt = '%1d AS'%(a2s)
+                gc.DrawText(txt,0,3+45)
+
+            gc.SetFont(gc.font['green10'])
+            txt = '%3dGUN'%gun
+            gc.DrawText(txt,0,3+30)
+
+            gc.SetFont(gc.font['white10'])
+            txt = '%2d\n%2d'%(chat,flat)
+            gc.DrawText(txt,40,3)
+
+class Header1(Instrument) :
     def __init__(self, mgr) :
-        Panel.__init__(self, None, mgr)
+        Instrument.__init__(self, None, mgr)
+        self.get_active = False
         #self.ctrls['M'] = Meter(self)
         self.ctrls['M'] = ThrottleMeter(self)
         self.ctrls['M'].SetPosition(76,10,40,40)
+        self.ctrls['S'] = SMS(self)
+        self.ctrls['S'].SetPosition(200,0,60,68)
 
-    def Draw(self) :
-        self.BeginDraw()
-
-        heading=self.mgr.data['heading']
-        lat=self.mgr.data['lat']
-        lon=self.mgr.data['lon']
-        vel=self.mgr.data['VG']
+    def DrawContent(self) :
+        #heading=self.mgr.data['heading']
         throttle=self.mgr.data['throttle']
         fuelrate=self.mgr.data['fuelrate']
+
+        sms = self.mgr.data['SMS']
 
         #self.ctrls['M'].heading = heading
         self.ctrls['M'].throttle = throttle
         self.ctrls['M'].fuelrate = fuelrate
+        self.ctrls['S'].sms = sms
 
         gc = self.gc
         gc.SetPen(gc.pen['green'])
         gc.DrawSymAC(gc,292,35,21,30)
 
-        gc.SetFont(gc.font['green12'])
+        gc.SetFont(gc.font['cyan12'])
         gc.DrawText('ICAWS',360,20)
         gc.DrawText('AP',579,11)
         gc.DrawText('AT',579,35)
-
-        txt = 'GSLONG%7.1f\n GSLAT%7.1f\n GSSPD%7.1f'%(lon,lat,vel)
-        gc.DrawText(txt,128,6)
-
-        self.EndDraw()
-
 

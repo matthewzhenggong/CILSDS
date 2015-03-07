@@ -1,26 +1,25 @@
 #!/bin/env python
 # -*- coding: utf-8 -*-
 
-from Panel import Panel
+from Panel import Instrument
 from Control import Control
 
 class WeaponManager(Control) :
     def __init__(self, parent) :
         Control.__init__(self, parent)
-        self.chat = 0
-        self.flat = 0
+        self.sms = None
         self.pylon = [ \
-                ['sm',-148,-10],
-                ['mm',-110,-20],
-                ['mm',-90,-20],
-                ['sm',-30,-20],
-                ['mm',-15,-20],
-                ['', 0, -20],
-                ['mm', 15,-20],
-                ['sm', 30,-20],
-                ['mm', 90,-20],
-                ['mm', 110,-20],
-                ['sm',148,-10] ]
+                ['sm',-148,-10, ''],
+                ['mm',-110,-20, ''],
+                ['mm',-90,-20, ''],
+                ['sm',-30,-20, ''],
+                ['mm',-15,-20, ''],
+                ['', 0, -20, ''],
+                ['mm', 15,-20, ''],
+                ['sm', 30,-20, ''],
+                ['mm', 90,-20, ''],
+                ['mm', 110,-20, ''],
+                ['sm',148,-10, ''] ]
 
     def RebuildPath(self) :
         if self.gc :
@@ -128,8 +127,9 @@ class WeaponManager(Control) :
             self.ac = None
             self.wps = None
         
-    def Draw(self) :
-        self.BeginDraw()
+    def DrawContent(self) :
+        if not self.sms :
+            return
 
         gc = self.gc
 
@@ -138,11 +138,23 @@ class WeaponManager(Control) :
         gc.Translate(164,113)
         gc.DrawPath(self.ac)
 
-        gc.SetBrush(gc.brush['green'])
+        pylons = self.sms['pylons']
+        for i in self.pylon :
+            i[0] = ''
+        for i in pylons['MRM'] :
+            self.pylon[i[1]-1][0] = 'mm'
+            self.pylon[i[1]-1][3] = i[0]
+        for i in pylons['SRM'] :
+            self.pylon[i[1]-1][0] = 'sm'
+            self.pylon[i[1]-1][3] = i[0]
+        for i in pylons['AS'] :
+            self.pylon[i[1]-1][0] = 'as'
+            self.pylon[i[1]-1][3] = i[0]
 
+        gc.SetBrush(gc.brush['green'])
         gc.SetFont(gc.font['green12'])
         for idx,i in enumerate(self.pylon) :
-            if i[0] in self.wps :
+            if i[0] in self.wps and idx+1 != pylons['RDY'] and idx+1 != pylons['firing'] :
                 gc.PushState()
                 gc.Translate(i[1],i[2])
                 gc.DrawPath(self.wps[i[0]])
@@ -151,27 +163,48 @@ class WeaponManager(Control) :
                 gc.DrawText(txt, -te[0]/2, -40-te[1])
                 gc.PopState()
 
+        notice = 'NO WPN SELECTED'
+        if pylons['RDY']>0 and pylons['RDY']<12 and int(pylons['firing']/10)%2 :
+            gc.SetPen(gc.pen['white'])
+            gc.SetBrush(gc.brush['white'])
+            gc.SetFont(gc.font['white12'])
+            i = self.pylon[pylons['RDY']-1]
+            gc.PushState()
+            gc.Translate(i[1],i[2])
+            gc.DrawPath(self.wps[i[0]])
+            txt = str(pylons['RDY'])
+            te = gc.GetTextExtent(txt)
+            gc.DrawText(txt, -te[0]/2, -40-te[1])
+            gc.PopState()
+            notice = 'STAS %s-RDY'%(i[3])
+
+        chat = self.sms['CHAT']
+        flat = self.sms['FLAT']
 
         gc.SetPen(gc.pen['white'])
-        gc.SetBrush(gc.brush['back'])
+        gc.SetBrush(gc.brush['tab'])
         gc.DrawRectangle(-45,75,90,90)
         gc.SetFont(gc.font['white12'])
-        gc.DrawText('CHAT{:3d}\nFLAT{:3d}'.format(self.chat,self.flat),-26,80)
+        gc.DrawText('CHAT{:3d}\nFLAT{:3d}'.format(chat,flat),-26,80)
+
+        gc.SetFont(gc.font['white20'])
+        gc.SetPen(gc.pen['white'])
+        gc.SetBrush(gc.brush['tab'])
+        te = gc.GetTextExtent(notice)
+        gc.DrawRectangle((-te[0])/2-1,40-1,te[0]+2,te[1]+2)
+        gc.DrawText(notice,(-te[0])/2,40)
 
         gc.PopState()
 
-        self.EndDraw()
-
-class SMS(Panel) :
+class SMS(Instrument) :
     def __init__(self, mgr) :
-        Panel.__init__(self, None, mgr)
+        Instrument.__init__(self, None, mgr)
         self.ctrls['WM'] = WeaponManager(self)
         self.ctrls['WM'].SetPosition(0,0,320,320)
 
-    def Layout(self) :
-        pass
+    def DrawContent(self) :
 
-    def Draw(self) :
-        self.BeginDraw()
-        self.EndDraw()
+        sms = self.mgr.data['SMS']
+
+        self.ctrls['WM'].sms = sms
 

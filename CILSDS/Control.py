@@ -1,6 +1,12 @@
 #!/bin/env python
 # -*- coding: utf-8 -*-
 
+class ClickEvent :
+    def __init__(self, ctrl, x, y) :
+        self.ctrl = ctrl
+        self.x = x
+        self.y = y
+
 class Control :
     def __init__(self, parent) :
         self.parent = parent
@@ -30,8 +36,8 @@ class Control :
             y -= self.y
             if x >= 0 and x < self.w and y >= 0 and y < self.h :
                 if self.click_func :
-                    self.click_func(self,x,y)
-                    return True
+                    self.click_func(ClickEvent(self,x,y))
+                return True
         return False
 
     def OnTouch(self, x, y) :
@@ -50,6 +56,15 @@ class Control :
 
     def EndDraw(self) :
         self.gc.PopState()
+
+    def DrawContent(self) :
+        pass
+
+    def Draw(self) :
+        if self.visable:
+            self.BeginDraw()
+            self.DrawContent()
+            self.EndDraw()
 
     def RebuildPath(self) :
         pass
@@ -84,6 +99,11 @@ class Control :
     def SetRightBottom(self, x, y) :
         self.visable = True
         self.x = x-self.w
+        self.y = y-self.h
+
+    def SetCenterBottom(self, x, y) :
+        self.visable = True
+        self.x = x-self.w/2
         self.y = y-self.h
 
     def Visable(self, v) :

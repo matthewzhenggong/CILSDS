@@ -43,14 +43,19 @@ class Manager(wx.Panel):
         'throttle' : 0,
         'fuelrate' : 0,
         'T' : 0,
+        'mode' : 'AA1',
+        'SMS' : {'GUN':182, 'CHAT':10, 'FLAT':20,  \
+                 'pylons':{ 'firing': -1, 'RDY':4, \
+                    'SRM' : [('AIM9',1), ('AIM9',11)], \
+                    'MRM' : [('A120',4), ('A120',5), ('A120',7), ('A120',8)], \
+                    'AS' : [] }
+                }
         }
 
-        self.mini_panels = {}
-        self.body_panels = { \
+        self.using_panels = {}
+        self.free_panels = { \
                 'EFI':EFI(self), \
-                'SMS':SMS(self) \
-                }
-        self.header_panels = { \
+                'SMS':SMS(self), \
                 'H1':Header1(self), \
                 'H2':Header2(self) \
                 }
@@ -73,6 +78,21 @@ class Manager(wx.Panel):
             self.data[i] = data[i]
         self.Refresh(False)
 
+    def RestoreInstrument(self, title, panel) :
+        if title in self.using_panels :
+            del self.using_panels[title]
+        self.free_panels[title] = panel
+
+    def GetInstrument(self, slot, title) :
+        if title in self.using_panels :
+            self.using_panels[title].FreeInstrument()
+        if title in self.free_panels :
+            panel = self.free_panels[title]
+            del self.free_panels[title]
+            self.using_panels[title] = slot
+            return panel
+        return None
+
     def OnSize(self, evt):
         self.sz = self.GetClientSize()
         self.sz.width = max(1, self.sz.width)
@@ -81,10 +101,6 @@ class Manager(wx.Panel):
         self.dc = wx.MemoryDC(self._buffer)
         self.gc = wx.GraphicsContext.Create(self.dc)
         CreateResources(self.gc)
-        for i in self.mini_panels :
-            self.mini_panels[i].UpdateGC(self.gc)
-        for i in self.body_panels :
-            self.body_panels[i].UpdateGC(self.gc)
         for i in self.panels :
             i.UpdateGC(self.gc)
 
@@ -97,10 +113,6 @@ class Manager(wx.Panel):
         evt.Skip()
         
     def Close(self):
-        for i in self.mini_panels :
-            self.mini_panels[i].UpdateGC(None)
-        for i in self.body_panels :
-            self.body_panels[i].UpdateGC(None)
         for i in self.panels :
             i.UpdateGC(None)
         self.gc = None
@@ -170,11 +182,11 @@ class Manager(wx.Panel):
         gc.SetFont(gc.font['default'])
         gc.DrawText('%.3f'%self.enduring, 0,0)
 
-    def SwapWindow(self, ctrl, x, y):
+    def SwapWindow(self, event):
         for (i,j) in itertools.izip(self.Body0.panels, self.Body1.panels) :
             tt = i.title
-            i.SetTitle(j.title)
-            j.SetTitle(tt)
+            i.SetInstrument(j.title)
+            j.SetInstrument(tt)
         frame_id = self.Body0.frame_id
         self.Body0.Layout(self.Body1.frame_id)
         self.Body1.Layout(frame_id)

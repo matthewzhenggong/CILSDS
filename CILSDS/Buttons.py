@@ -11,24 +11,20 @@ class Button(Control) :
         self.pen = 'button'
         self.txt = label
 
-    def Draw(self) :
-        if self.visable :
-            self.BeginDraw()
+    def BeginDraw(self) :
+        Control.BeginDraw(self)
+        gc = self.gc
+        gc.SetBrush(gc.brush[self.brush])
+        gc.SetPen(gc.pen[self.pen])
+        gc.SetFont(gc.font[self.font])
 
+    def EndDraw(self) :
+        if self.touching :
             gc = self.gc
-            if self.touching :
-                gc.SetPen(gc.pen['focus'])
-            else :
-                gc.SetPen(gc.pen['none'])
-            gc.SetBrush(gc.brush[self.brush])
+            gc.SetPen(gc.pen['focus'])
+            gc.SetBrush(gc.brush['none'])
             gc.DrawRectangle(1,1,self.w-2,self.h-2)
-
-            gc.SetPen(gc.pen[self.pen])
-            gc.SetFont(gc.font[self.font])
-
-            self.DrawContent()
-
-            self.EndDraw()
+        Control.EndDraw(self)
 
     def DrawContent(self) :
         te = self.gc.GetTextExtent(self.txt)
@@ -101,13 +97,46 @@ class ButtonArrowUp(Button) :
 class ButtonTitle(Button) :
     def __init__(self, parent) :
         Button.__init__(self, parent)
-        self.w = 50
+        self.w = 60
         self.h = 40
         self.font = 'menu_title'
 
     def DrawContent(self) :
         gc = self.gc
-        te = gc.GetTextExtent(self.parent.title)
-        gc.DrawText(self.parent.title, (self.w-te[0])/2, (self.h-te[1])/2)
+        title = self.parent.title
+        mode = self.parent.mgr.data['mode']
+        te = gc.GetTextExtent(title)
+        te2 = gc.GetTextExtent(mode)
+        margin = (self.h-te[1]-te2[1])/3
+        if margin < 0 :
+            margin = 0
+        gc.DrawText(title, (self.w-te[0])/2, margin)
+        gc.DrawText(mode, (self.w-te2[0])/2, margin+te[1]+margin)
 
+class ButtonTab(Button) :
+    def __init__(self, parent, mimipanel) :
+        Button.__init__(self, parent)
+        self.w = 80
+        self.h = 20
+        self.font = 'tab'
+        self.brush = 'tab'
+        self.minipanel = mimipanel
+
+    def DrawContent(self) :
+        gc = self.gc
+        title = self.minipanel.title
+        te = gc.GetTextExtent(title)
+        l = gc.CreatePath()
+        l.MoveToPoint(2,self.h-1)
+        l.AddLineToPoint(5,2)
+        l.AddLineToPoint(self.w-5,2)
+        l.AddLineToPoint(self.w-2,self.h-1)
+        gc.DrawPath(l)
+        gc.DrawText(title, (self.w-te[0])/2, (self.h-te[1])/2)
+
+    def OnClick(self, x, y) :
+        rslt = Control.OnClick(self, x, y)
+        if rslt :
+            self.minipanel.Swap(None)
+        return rslt
 

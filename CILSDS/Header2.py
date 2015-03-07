@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from Control import Control
-from Panel import Panel
+from Panel import Instrument
 
 class Recorder(Control) :
     def __init__(self, parent) :
@@ -31,9 +31,7 @@ class Recorder(Control) :
             self.rec = None
             self.cyc = None
 
-    def Draw(self) :
-        self.BeginDraw()
-
+    def DrawContent(self) :
         gc = self.gc
         gc.SetPen(gc.pen['green'])
         gc.SetFont(gc.font['green12'])
@@ -53,18 +51,14 @@ class Recorder(Control) :
         gc.StrokePath(self.cyc)
         gc.PopState()
 
-        self.EndDraw()
-
-
-class Header2(Panel) :
+class Header2(Instrument) :
     def __init__(self, mgr) :
-        Panel.__init__(self, None, mgr)
+        Instrument.__init__(self, None, mgr)
+        self.get_active = False
         self.ctrls['R'] = Recorder(self)
         self.ctrls['R'].SetPosition(183, 0, 68,68)
 
-    def Draw(self) :
-        self.BeginDraw()
-
+    def DrawContent(self) :
         self.ctrls['R'].T = self.mgr.data['T']
 
         gc = self.gc
@@ -90,7 +84,4 @@ class Header2(Panel) :
         gc.SetFont(gc.font['white20'])
         gc.DrawText('MENU',3,11)
         gc.PopState()
-
-        self.EndDraw()
-
 

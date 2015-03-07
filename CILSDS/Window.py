@@ -5,120 +5,79 @@
 from Buttons import *
 from Panel import Panel
 
-class HeadPanel(Panel) :
+class Slot(Panel) :
     def __init__(self, parent, mgr, title) :
         Panel.__init__(self, parent, mgr)
-        self.SetTitle(title)
+        self.SetInstrument(title)
 
-    def SetTitle(self, title) :
+    def SetInstrument(self, title) :
+        self.FreeInstrument()
+        panel = self.mgr.GetInstrument(self, title)
         self.title = title
-        if title in self.mgr.header_panels :
-           self.panels = [self.mgr.header_panels[self.title]]
-           self.panels[0].SetPosition(0,0, self.w, self.h)
+        if panel :
+           panel.SetParent(self)
+           panel.UpdateGC(self.gc)
+           self.panels = [panel]
+           self.Layout()
         else :
            self.panels = []
+
+    def FreeInstrument(self) :
+        if len(self.panels) :
+           panel = self.panels[0]
+           panel.SetParent(None)
+           panel.UpdateGC(None)
+           self.mgr.RestoreInstrument(self.title, panel)
+           self.panels = []
+           self.title = 'BLANK'
 
     def Layout(self) :
         if len(self.panels) :
             self.panels[0].SetPosition(0,0, self.w, self.h)
         Panel.Layout(self)
 
-    def Draw(self) :
-        if self.visable and len(self.panels) :
-            self.panels[0].SetPosition(0,0, self.w, self.h)
-            self.panels[0].Layout()
-            self.BeginDraw(drawBoarder=False)
-            self.EndDraw()
-        else :
-            Panel.Draw(self)
+    def DrawContent(self) :
+        if len(self.panels) == 0 :
+            self.gc.SetBrush(self.gc.brush['back'])
+            self.gc.SetPen(self.gc.pen['panel_board'])
+            self.gc.DrawRectangle(0,0,self.w,self.h)
 
-class BodyPanel(Panel) :
+class HeadSlot(Slot) :
     def __init__(self, parent, mgr, title) :
-        Panel.__init__(self, parent, mgr)
-        self.SetTitle(title)
-        self.ctrls['menu'] = ButtonTitle(self)
+        Slot.__init__(self, parent, mgr, title)
 
+class MainSlot(Slot) :
+    def __init__(self, parent, mgr, title) :
+        Slot.__init__(self, parent, mgr, title)
+        self.ctrls['menu'] = ButtonTitle(self)
         self.ctrls['menu'].SetClickFunc(self.parent.ShowMenu)
 
-    def SetTitle(self, title) :
-        self.title = title
-        if title in self.mgr.body_panels :
-           self.panels = [self.mgr.body_panels[self.title]]
-           self.panels[0].SetPosition(0,0, self.w, self.h)
-        else :
-           self.panels = []
-
-    def Layout(self) :
-        if len(self.panels) :
-            self.panels[0].SetPosition(0,0, self.w, self.h)
-        self.ctrls['menu'].SetLeftTop(0,0)
-        Panel.Layout(self)
-
-    def Draw(self) :
-        if self.visable and len(self.panels) :
-            self.panels[0].SetPosition(0,0, self.w, self.h)
-            self.panels[0].Layout()
-            self.BeginDraw(drawBoarder=False)
-            self.EndDraw()
-        else :
-            Panel.Draw(self)
-
-class MiniPanel(Panel) :
+class PreviewSlot(Slot) :
     def __init__(self, parent, mgr, title, upper) :
-        Panel.__init__(self, parent, mgr)
+        Slot.__init__(self, parent, mgr, title)
         self.upper = upper
-        self.SetTitle(title)
+        self.click_func = self.Swap
 
-    def SetTitle(self, title) :
-        self.title = title
-        if title in self.mgr.mini_panels :
-           self.panels = [self.mgr.mini_panels[self.title]]
-           self.panels[0].SetPosition(0,0, self.w, self.h)
-        else :
-           self.panels = []
+    def DrawContent(self) :
+        Slot.DrawContent(self)
+        gc = self.gc
+        gc.SetFont(gc.font['green12'])
+        te = gc.GetTextExtent(self.title)
+        gc.DrawText(self.title, (self.w-te[0])/2, self.h-te[1])
 
-    def Layout(self) :
-        if len(self.panels) :
-            self.panels[0].SetPosition(0,0, self.w, self.h)
-        Panel.Layout(self)
-
-    def Draw(self) :
-        if self.visable and len(self.panels) :
-            self.panels[0].SetPosition(0,0, self.w, self.h)
-            self.panels[0].Layout()
-            self.BeginDraw(drawBoarder=False)
-            gc = self.gc
-            gc.SetFont(gc.font['green12'])
-            te = gc.GetTextExtent(self.title)
-            gc.DrawText(self.title, (self.w-te[0])/2, self.h-te[1])
-            self.EndDraw()
-        else :
-            self.BeginDraw(drawBoarder=True)
-            gc = self.gc
-            gc.SetFont(gc.font['green12'])
-            te = gc.GetTextExtent(self.title)
-            gc.DrawText(self.title, (self.w-te[0])/2, self.h-te[1])
-            self.EndDraw()
-
-    def OnClick(self, x, y) :
-        if self.visable:
-            x = x - self.x
-            y = y - self.y
-            if x >= 0 and x < self.w and y >= 0 and y < self.h :
-                if self.upper.visable :
-                    name = self.upper.title
-                    self.upper.SetTitle(self.title)
-                    self.SetTitle(name)
-                elif self.parent.panel_left.visable :
-                    name = self.parent.panel_left.title
-                    self.parent.panel_left.SetTitle(self.title)
-                    self.SetTitle(name)
-                elif self.parent.panel_right.visable :
-                    name = self.parent.panel_right.title
-                    self.parent.panel_right.SetTitle(self.title)
-                    self.SetTitle(name)
-                return True
-        return False
+    def Swap(self, event) :
+        if self.upper.visable :
+            name = self.upper.title
+            self.upper.SetInstrument(self.title)
+            self.SetInstrument(name)
+        elif self.parent.panel_left.visable :
+            name = self.parent.panel_left.title
+            self.parent.panel_left.SetInstrument(self.title)
+            self.SetInstrument(name)
+        elif self.parent.panel_right.visable :
+            name = self.parent.panel_right.title
+            self.parent.panel_right.SetInstrument(self.title)
+            self.SetInstrument(name)
 
 class MenuPanel(Panel) :
     def __init__(self, parent, mgr) :
@@ -145,7 +104,7 @@ class MenuPanel(Panel) :
                     cow = idx % 5
                     if x>=item[0] and x < item[1] \
                         and y>= item[2] and y < item[3] :
-                        self.MenuCtrl.parent.SetTitle(item[4][:-1])
+                        self.MenuCtrl.parent.SetInstrument(item[4][:-1])
                         break
                 return True
         return False
@@ -161,18 +120,19 @@ class MenuPanel(Panel) :
                 rslt = True
         return rslt
 
-    def Draw(self) :
-        if self.visable:
-            self.BeginDraw()
-
+    def DrawContent(self) :
             gc = self.gc
+            gc.SetBrush(self.gc.brush['back'])
+            gc.SetPen(self.gc.pen['panel_board'])
+            gc.DrawRectangle(0,0,self.w,self.h)
             gc.SetFont(gc.font['menu_title'])
             tt = self.MenuCtrl.parent.title
             te = gc.GetTextExtent(tt)
-            gc.DrawText(tt, (self.MenuCtrl.w-te[0])/2, (self.MenuCtrl.h-te[1])/2)
+            margin = (self.MenuCtrl.h-te[1]-te[1])/3
+            gc.DrawText(tt, (self.MenuCtrl.w-te[0])/2, margin)
             gc.SetFont(gc.font['menu_subtitle'])
-            gc.DrawText('MENU', 10, self.MenuCtrl.h)
-            gc.DrawText('POPUP', 8, self.MenuCtrl.h+te[1])
+            gc.DrawText('MENU', 10, margin+te[1]+margin)
+            gc.DrawText('POPUP', 8, margin+te[1]+margin+te[1])
             gc.SetFont(gc.font['menu_text'])
 
             self.marks = []
@@ -193,8 +153,6 @@ class MenuPanel(Panel) :
                     gc.DrawRectangle(x0,y0,x1-x0,y1-y0)
                 gc.DrawText(item, x, y)
 
-            self.EndDraw()
-
 class Window(Panel) :
     def __init__(self, mgr, right_hand, x, y, w, h, frame_id, configs) :
         Panel.__init__(self, None, mgr)
@@ -202,13 +160,13 @@ class Window(Panel) :
         self.SetPosition(x, y, w, h)
         self.ShowingMenu = False
 
-        self.header = HeadPanel(self,mgr, configs[6])
-        self.panel_left = BodyPanel(self,mgr, configs[0])
-        self.panel_right = BodyPanel(self,mgr, configs[1])
-        self.panel_left_left = MiniPanel(self,mgr, configs[2], self.panel_left)
-        self.panel_left_right = MiniPanel(self,mgr, configs[3], self.panel_left)
-        self.panel_right_left = MiniPanel(self,mgr, configs[4], self.panel_right)
-        self.panel_right_right = MiniPanel(self,mgr, configs[5], self.panel_right)
+        self.header = HeadSlot(self,mgr, configs[6])
+        self.panel_left = MainSlot(self,mgr, configs[0])
+        self.panel_right = MainSlot(self,mgr, configs[1])
+        self.panel_left_left = PreviewSlot(self,mgr, configs[2], self.panel_left)
+        self.panel_left_right = PreviewSlot(self,mgr, configs[3], self.panel_left)
+        self.panel_right_left = PreviewSlot(self,mgr, configs[4], self.panel_right)
+        self.panel_right_right = PreviewSlot(self,mgr, configs[5], self.panel_right)
         self.MenuPanel = MenuPanel(self,mgr)
 
         self.panels = [ self.panel_left_right, self.panel_right_right,
@@ -225,6 +183,11 @@ class Window(Panel) :
         self.ctrls['extLD'] = ButtonArrowDown(self)
         self.ctrls['extRU'] = ButtonArrowUp(self)
         self.ctrls['extRD'] = ButtonArrowDown(self)
+        self.ctrls['tabL1'] = ButtonTab(self,self.panel_left_left)
+        self.ctrls['tabL2'] = ButtonTab(self,self.panel_left_right)
+        self.ctrls['tabR1'] = ButtonTab(self,self.panel_right_left)
+        self.ctrls['tabR2'] = ButtonTab(self,self.panel_right_right)
+
         self.ctrls['swap'].SetClickFunc(mgr.SwapWindow)
         self.ctrls['extR'].SetClickFunc(self.ExtRight)
         self.ctrls['extL'].SetClickFunc(self.ExtLeft)
@@ -235,22 +198,22 @@ class Window(Panel) :
 
         self.Layout(frame_id)
 
-    def ExtRight(self, ctrl, x,y) :
+    def ExtRight(self, event) :
         self.Layout([6,4,6,4,4,3,6,0][self.frame_id])
 
-    def ExtLeft(self, ctrl, x,y) :
+    def ExtLeft(self, event) :
         self.Layout([7,7,5,5,3,5,0,7][self.frame_id])
 
-    def ExtLeftUp(self, ctrl, x,y) :
+    def ExtLeftUp(self, event) :
         self.Layout([0,0,2,2,6,5,6,7][self.frame_id])
 
-    def ExtLeftDown(self, ctrl, x,y) :
+    def ExtLeftDown(self, event) :
         self.Layout([1,1,3,3,4,5,4,7][self.frame_id])
 
-    def ExtRightUp(self, ctrl, x,y) :
+    def ExtRightUp(self, event) :
         self.Layout([0,1,0,1,4,7,6,7][self.frame_id])
 
-    def ExtRightDown(self, ctrl, x,y) :
+    def ExtRightDown(self, event) :
         self.Layout([2,3,2,3,4,5,6,5][self.frame_id])
 
     def UpdateGC(self, gc) :
@@ -260,125 +223,160 @@ class Window(Panel) :
     def Layout(self, frame_id) :
         self.ShowingMenu = False
         self.frame_id = frame_id
-        w2 = self.w/2
-        w4 = self.w/4
+        w = self.w
+        h = self.h
+        w2 = w/2
+        w4 = w/4
         y1 = 68
-        hm = (self.h-y1)/4
+        hm = (h-y1)/4
         y3 = y1+3*hm
-        self.header.SetPosition(0,0,self.w,y1)
+        self.header.SetPosition(0,0,w,y1)
         if self.right_hand :
             self.ctrls['swap'].SetLeftTop(0,0)
         else :
-            self.ctrls['swap'].SetRightTop(self.w,0)
+            self.ctrls['swap'].SetRightTop(w,0)
 
         if self.frame_id == 0 :
-            self.panel_left.SetPosition(0,y1,w2,self.h-y1-hm)
-            self.panel_right.SetPosition(w2,y1,w2,self.h-y1-hm)
+            self.panel_left.SetPosition(0,y1,w2,h-y1-hm)
+            self.panel_right.SetPosition(w2,y1,w2,h-y1-hm)
             self.panel_left_left.SetPosition(0,y3,w4,hm)
             self.panel_left_right.SetPosition(w4,y3,w4,hm)
             self.panel_right_left.SetPosition(w2,y3,w4,hm)
             self.panel_right_right.SetPosition(w2+w4,y3,w4,hm)
-            self.ctrls['extR'].SetRightBottom(self.w/2,self.h)
-            self.ctrls['extL'].SetLeftBottom(self.w/2,self.h)
+            self.ctrls['extR'].SetRightBottom(w2,h)
+            self.ctrls['extL'].SetLeftBottom(w2,h)
             self.ctrls['extLU'].Visable(False)
-            self.ctrls['extLD'].SetLeftBottom(0,self.h)
+            self.ctrls['extLD'].SetLeftBottom(0,h)
             self.ctrls['extRU'].Visable(False)
-            self.ctrls['extRD'].SetRightBottom(self.w,self.h)
+            self.ctrls['extRD'].SetRightBottom(w,h)
+            self.ctrls['tabL1'].Visable(False)
+            self.ctrls['tabL2'].Visable(False)
+            self.ctrls['tabR1'].Visable(False)
+            self.ctrls['tabR2'].Visable(False)
         elif self.frame_id == 1 :
-            self.panel_left.SetPosition(0,y1,w2,self.h-y1)
-            self.panel_right.SetPosition(w2,y1,w2,self.h-y1-hm)
+            self.panel_left.SetPosition(0,y1,w2,h-y1)
+            self.panel_right.SetPosition(w2,y1,w2,h-y1-hm)
             self.panel_left_left.Visable(False)
             self.panel_left_right.Visable(False)
             self.panel_right_left.SetPosition(w2,y3,w4,hm)
             self.panel_right_right.SetPosition(w2+w4,y3,w4,hm)
-            self.ctrls['extR'].SetRightBottom(self.w/2,self.h)
-            self.ctrls['extL'].SetLeftBottom(self.w/2,self.h)
-            self.ctrls['extLU'].SetLeftBottom(0,self.h)
+            self.ctrls['extR'].SetRightBottom(w2,h)
+            self.ctrls['extL'].SetLeftBottom(w2,h)
+            self.ctrls['extLU'].SetLeftBottom(0,h)
             self.ctrls['extLD'].Visable(False)
             self.ctrls['extRU'].Visable(False)
-            self.ctrls['extRD'].SetRightBottom(self.w,self.h)
+            self.ctrls['extRD'].SetRightBottom(w,h)
+            self.ctrls['tabL1'].SetCenterBottom(100,h)
+            self.ctrls['tabL2'].SetCenterBottom(200,h)
+            self.ctrls['tabR1'].Visable(False)
+            self.ctrls['tabR2'].Visable(False)
         elif self.frame_id == 2 :
-            self.panel_left.SetPosition(0,y1,w2,self.h-y1-hm)
-            self.panel_right.SetPosition(w2,y1,w2,self.h-y1)
+            self.panel_left.SetPosition(0,y1,w2,h-y1-hm)
+            self.panel_right.SetPosition(w2,y1,w2,h-y1)
             self.panel_left_left.SetPosition(0,y3,w4,hm)
             self.panel_left_right.SetPosition(w4,y3,w4,hm)
             self.panel_right_left.Visable(False)
             self.panel_right_right.Visable(False)
-            self.ctrls['extR'].SetRightBottom(self.w/2,self.h)
-            self.ctrls['extL'].SetLeftBottom(self.w/2,self.h)
+            self.ctrls['extR'].SetRightBottom(w/2,h)
+            self.ctrls['extL'].SetLeftBottom(w/2,h)
             self.ctrls['extLU'].Visable(False)
-            self.ctrls['extLD'].SetLeftBottom(0,self.h)
-            self.ctrls['extRU'].SetRightBottom(self.w,self.h)
+            self.ctrls['extLD'].SetLeftBottom(0,h)
+            self.ctrls['extRU'].SetRightBottom(w,h)
             self.ctrls['extRD'].Visable(False)
+            self.ctrls['tabR1'].SetCenterBottom(w-100,h)
+            self.ctrls['tabR2'].SetCenterBottom(w-200,h)
+            self.ctrls['tabL1'].Visable(False)
+            self.ctrls['tabL2'].Visable(False)
         elif self.frame_id == 3 :
-            self.panel_left.SetPosition(0,y1,w2,self.h-y1)
-            self.panel_right.SetPosition(w2,y1,w2,self.h-y1)
+            self.panel_left.SetPosition(0,y1,w2,h-y1)
+            self.panel_right.SetPosition(w2,y1,w2,h-y1)
             self.panel_left_left.Visable(False)
             self.panel_left_right.Visable(False)
             self.panel_right_left.Visable(False)
             self.panel_right_right.Visable(False)
-            self.ctrls['extR'].SetRightBottom(self.w/2,self.h)
-            self.ctrls['extL'].SetLeftBottom(self.w/2,self.h)
-            self.ctrls['extLU'].SetLeftBottom(0,self.h)
+            self.ctrls['extR'].SetRightBottom(w/2,h)
+            self.ctrls['extL'].SetLeftBottom(w/2,h)
+            self.ctrls['extLU'].SetLeftBottom(0,h)
             self.ctrls['extLD'].Visable(False)
-            self.ctrls['extRU'].SetRightBottom(self.w,self.h)
+            self.ctrls['extRU'].SetRightBottom(w,h)
             self.ctrls['extRD'].Visable(False)
+            self.ctrls['tabL1'].SetCenterBottom(100,h)
+            self.ctrls['tabL2'].SetCenterBottom(200,h)
+            self.ctrls['tabR1'].SetCenterBottom(w-100,h)
+            self.ctrls['tabR2'].SetCenterBottom(w-200,h)
         elif self.frame_id == 4 :
-            self.panel_left.SetPosition(0,y1,self.w,self.h-y1)
+            self.panel_left.SetPosition(0,y1,w,h-y1)
             self.panel_right.Visable(False)
             self.panel_left_left.Visable(False)
             self.panel_left_right.Visable(False)
             self.panel_right_left.Visable(False)
             self.panel_right_right.Visable(False)
-            self.ctrls['extL'].SetRightBottom(self.w,self.h)
+            self.ctrls['extL'].SetRightBottom(w,h)
             self.ctrls['extR'].Visable(False)
-            self.ctrls['extLU'].SetLeftBottom(0,self.h)
+            self.ctrls['extLU'].SetLeftBottom(0,h)
             self.ctrls['extLD'].Visable(False)
             self.ctrls['extRU'].Visable(False)
             self.ctrls['extRD'].Visable(False)
+            self.ctrls['tabL1'].SetCenterBottom(100,h)
+            self.ctrls['tabL2'].SetCenterBottom(200,h)
+            self.ctrls['tabR1'].SetCenterBottom(w-100,h)
+            self.ctrls['tabR2'].SetCenterBottom(w-200,h)
         elif self.frame_id == 5 :
             self.panel_left.Visable(False)
-            self.panel_right.SetPosition(0,y1,self.w,self.h-y1)
+            self.panel_right.SetPosition(0,y1,w,h-y1)
             self.panel_left_left.Visable(False)
             self.panel_left_right.Visable(False)
             self.panel_right_left.Visable(False)
             self.panel_right_right.Visable(False)
             self.ctrls['extL'].Visable(False)
-            self.ctrls['extR'].SetLeftBottom(0,self.h)
+            self.ctrls['extR'].SetLeftBottom(0,h)
             self.ctrls['extLU'].Visable(False)
             self.ctrls['extLD'].Visable(False)
-            self.ctrls['extRU'].SetRightBottom(self.w,self.h)
+            self.ctrls['extRU'].SetRightBottom(w,h)
             self.ctrls['extRD'].Visable(False)
+            self.ctrls['tabL1'].SetCenterBottom(100,h)
+            self.ctrls['tabL2'].SetCenterBottom(200,h)
+            self.ctrls['tabR1'].SetCenterBottom(w-100,h)
+            self.ctrls['tabR2'].SetCenterBottom(w-200,h)
         elif self.frame_id == 6 :
-            self.panel_left.SetPosition(0,y1,self.w,self.h-y1-hm)
+            self.panel_left.SetPosition(0,y1,w,h-y1-hm)
             self.panel_right.Visable(False)
             self.panel_left_left.SetPosition(0,y3,w4,hm)
             self.panel_left_right.SetPosition(w4,y3,w4,hm)
             self.panel_right_left.SetPosition(w2,y3,w4,hm)
             self.panel_right_right.SetPosition(w2+w4,y3,w4,hm)
-            self.ctrls['extL'].SetRightBottom(self.w,self.h)
+            self.ctrls['extL'].SetRightBottom(w,h)
             self.ctrls['extR'].Visable(False)
             self.ctrls['extLU'].Visable(False)
-            self.ctrls['extLD'].SetLeftBottom(0,self.h)
+            self.ctrls['extLD'].SetLeftBottom(0,h)
             self.ctrls['extRU'].Visable(False)
             self.ctrls['extRD'].Visable(False)
+            self.ctrls['tabL1'].Visable(False)
+            self.ctrls['tabL2'].Visable(False)
+            self.ctrls['tabR1'].Visable(False)
+            self.ctrls['tabR2'].Visable(False)
         elif self.frame_id == 7 :
             self.panel_left.Visable(False)
-            self.panel_right.SetPosition(0,y1,self.w,self.h-y1-hm)
+            self.panel_right.SetPosition(0,y1,w,h-y1-hm)
             self.panel_left_left.SetPosition(0,y3,w4,hm)
             self.panel_left_right.SetPosition(w4,y3,w4,hm)
             self.panel_right_left.SetPosition(w2,y3,w4,hm)
             self.panel_right_right.SetPosition(w2+w4,y3,w4,hm)
             self.ctrls['extL'].Visable(False)
-            self.ctrls['extR'].SetLeftBottom(0,self.h)
+            self.ctrls['extR'].SetLeftBottom(0,h)
             self.ctrls['extLU'].Visable(False)
             self.ctrls['extLD'].Visable(False)
             self.ctrls['extRU'].Visable(False)
-            self.ctrls['extRD'].SetRightBottom(self.w,self.h)
+            self.ctrls['extRD'].SetRightBottom(w,h)
+            self.ctrls['tabL1'].Visable(False)
+            self.ctrls['tabL2'].Visable(False)
+            self.ctrls['tabR1'].Visable(False)
+            self.ctrls['tabR2'].Visable(False)
         for i in self.panels :
             i.Layout()
 
-    def ShowMenu(self, ctrl, x, y) :
+    def ShowMenu(self, event) :
+        ctrl = event.ctrl
         self.ShowingMenu = True
         self.MenuPanel.MenuCtrl = ctrl
         self.MenuPanel.SetPosition(ctrl.parent.x,
@@ -386,7 +384,7 @@ class Window(Panel) :
         self.MenuPanel.Layout()
 
     def Draw(self) :
-        self.BeginDraw(drawBoarder=False)
+        self.BeginDraw()
         if self.ctrls :
             for i in self.ctrls :
                 self.ctrls[i].Draw() 
