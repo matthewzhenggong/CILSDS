@@ -331,16 +331,16 @@ class Compass(Control) :
 class EFI(Instrument) :
     def __init__(self, mgr) :
         Instrument.__init__(self, None, mgr)
-        self.ctrls['AH'] = ArtificialHorizon(self)
-        self.ctrls['V'] = Clock(self)
-        self.ctrls['H'] = Clock(self)
-        self.ctrls['H'].circle = 1000.0
-        self.ctrls['C'] = Compass(self)
         self.ctrls['BtnCDI'] = ButtonSwitch(self, 'CDI', ['OFF', 'ON'])
         self.ctrls['BtnFD'] = ButtonSwitch(self, 'FD', ['OFF', 'ON'], align_right=True)
         self.ctrls['BtnJPALS'] = Button(self, 'JPALS')
         self.ctrls['BtnILS'] = Button(self, 'ILS')
         self.ctrls['BtnCNTL'] = Button(self, 'CNTL>')
+        self.ctrls['AH'] = ArtificialHorizon(self)
+        self.ctrls['V'] = Clock(self)
+        self.ctrls['H'] = Clock(self)
+        self.ctrls['H'].circle = 1000.0
+        self.ctrls['C'] = Compass(self)
 
     def Layout(self) :
         margin = 60
