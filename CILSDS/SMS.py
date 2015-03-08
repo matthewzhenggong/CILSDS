@@ -252,6 +252,7 @@ class WeaponManager(Control) :
                     gc.PushState()
                     gc.Translate(i[1],250+i[4])
                     gc.DrawPath(self.wps[i[0]][1])
+                    gc.DrawText(txt, -te[0]/2, -10-te[1])
                     gc.PopState()
 
         notice = 'NO WPN SELECTED'
@@ -271,6 +272,7 @@ class WeaponManager(Control) :
                 gc.PushState()
                 gc.Translate(i[1],250+i[4])
                 gc.DrawPath(self.wps[i[0]][1])
+                gc.DrawText(txt, -te[0]/2, -10-te[1])
                 gc.PopState()
             notice = 'STAS %s-RDY'%(i[3])
 
