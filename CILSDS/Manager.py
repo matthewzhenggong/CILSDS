@@ -110,6 +110,7 @@ class Manager(wx.Panel):
         scaley = self.sz.height/self.height
         self.base_scale = scalex if scalex<scaley else scaley
 
+        self.Refresh(False)
         evt.Skip()
         
     def Close(self):
