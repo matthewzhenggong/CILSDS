@@ -293,7 +293,6 @@ class Compass(Control) :
 
         gc.SetPen(gc.pen['white'])
         gc.SetFont(gc.font['default'])
-        gc.DrawEllipse(-r, -r, 2*r, 2*r)
         gc.PushState()
         gc.Rotate(-self.val/57.3)
         gc.StrokePath(self.compass_symbol)

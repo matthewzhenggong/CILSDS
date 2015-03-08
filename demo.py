@@ -63,10 +63,10 @@ class MyFrame(wx.Frame):
                 self.log.setLevel(logging.INFO)
                 self.log_handle = logging.StreamHandler(RedirectText(self.log_txt))
                 self.log_handle.setFormatter(logging.Formatter('%(asctime)s:%(message)s'))
-                self.log.addHandler(self.log_handle)
+                #self.log.addHandler(self.log_handle)
                 # redirect stdout to log
-                sys.stdout=RedirectInfo()
-                sys.stderr=RedirectError()
+                #sys.stdout=RedirectInfo()
+                #sys.stderr=RedirectError()
 
                 self.log.info('Starting...')
 
