@@ -90,6 +90,7 @@ class Instrument(Panel) :
     def DrawPreview(self) :
         if self.visable:
             Control.BeginDraw(self)
+            self.gc.SetBrush(self.gc.brush['back'])
             self.gc.SetPen(self.gc.pen['panel_board'])
             self.gc.DrawRectangle(0,0,self.w,self.h)
             self.DrawPreviewContent()
