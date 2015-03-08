@@ -209,3 +209,17 @@ class Header1(Instrument) :
         gc.DrawText('AP',579,11)
         gc.DrawText('AT',579,35)
 
+        gc.SetFont(gc.font['green10'])
+        gc.DrawText('  10 0\nI 10 0\nE  0 0',125,10)
+
+        gc.SetPen(gc.pen['none'])
+        gc.SetBrush(gc.brush['blue'])
+
+        fuel_per = 0.95
+        gc.DrawRectangle(170,6+60*(1-fuel_per),20,60*fuel_per)
+        gc.SetPen(gc.pen['black'])
+        gc.StrokeLine(170,6+12,190,6+12)
+        gc.StrokeLine(170,6+24,190,6+24)
+        gc.StrokeLine(170,6+36,190,6+36)
+        gc.StrokeLine(170,6+48,190,6+48)
+

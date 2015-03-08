@@ -24,6 +24,7 @@ def CreateResources(gc):
     gc.pen['green'] = gc.CreatePen(wx.Pen(wx.GREEN, 2))
     gc.pen['green1'] = gc.CreatePen(wx.Pen(wx.GREEN, 1))
     gc.pen['white'] = gc.CreatePen(wx.Pen(wx.WHITE, 2))
+    gc.pen['black'] = gc.CreatePen(wx.Pen(wx.BLACK, 2))
     gc.pen['white1'] = gc.CreatePen(wx.Pen(wx.WHITE, 1))
     gc.pen['big_purple'] = gc.CreatePen(wx.Pen(wx.Colour(0xCC,0x00,0xFF), 7))
     gc.pen['purple'] = gc.CreatePen(wx.Pen(wx.Colour(0xCC,0x00,0xFF), 2))
@@ -33,6 +34,7 @@ def CreateResources(gc):
     gc.brush['default'] = gc.brush['none']
     gc.brush['back'] = gc.CreateBrush(wx.BLACK_BRUSH)
     gc.brush['button'] = gc.brush['none']
+    gc.brush['blue'] = gc.CreateBrush(wx.Brush(wx.BLUE))
     gc.brush['green'] = gc.CreateBrush(wx.Brush(wx.GREEN))
     gc.brush['white'] = gc.CreateBrush(wx.Brush(wx.WHITE))
     gc.brush['ground'] = gc.CreateBrush(wx.Brush(wx.Colour(0x7D,0x3B,0x42)))

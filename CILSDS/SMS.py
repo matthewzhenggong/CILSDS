@@ -4,22 +4,24 @@
 from Panel import Instrument
 from Control import Control
 
+from math import pi,sin
+
 class WeaponManager(Control) :
     def __init__(self, parent) :
         Control.__init__(self, parent)
         self.sms = None
         self.pylon = [ \
-                ['sm',-148,-10, ''],
-                ['mm',-110,-20, ''],
-                ['mm',-90,-20, ''],
-                ['sm',-30,-20, ''],
-                ['mm',-15,-20, ''],
-                ['', 0, -20, ''],
-                ['mm', 15,-20, ''],
-                ['sm', 30,-20, ''],
-                ['mm', 90,-20, ''],
-                ['mm', 110,-20, ''],
-                ['sm',148,-10, ''] ]
+                ['sm',-148,-10, '', -20],
+                ['mm',-110,-20, '', -9],
+                ['mm',-90,-20, '', -9],
+                ['sm',-30,-20, '', 9],
+                ['mm',-15,-20, '', 9],
+                ['', 0, -20, '', 9],
+                ['mm', 15,-20, '', 9],
+                ['sm', 30,-20, '', 9],
+                ['mm', 90,-20, '', -9],
+                ['mm', 110,-20, '', -9],
+                ['sm',148,-10, '', -20] ]
 
     def RebuildPath(self) :
         if self.gc :
@@ -91,6 +93,45 @@ class WeaponManager(Control) :
 
             self.ac = ac
 
+            ac = gc.CreatePath()
+            ac.MoveToPoint(-60,-12)
+            ac.AddLineToPoint(0,0)
+            ac.AddLineToPoint(60,-12)
+            ac.AddLineToPoint(64,-17)
+            ac.AddLineToPoint(146,-20)
+            ac.AddLineToPoint(146,-22)
+            ac.AddLineToPoint(62,-26)
+            ac.MoveToPoint(-60,-12)
+            ac.AddLineToPoint(-64,-17)
+            ac.AddLineToPoint(-146,-20)
+            ac.AddLineToPoint(-146,-22)
+            ac.AddLineToPoint(-62,-26)
+            #ac.MoveToPoint(0,0)
+            #ac.AddLineToPoint(0,21)
+            ac.MoveToPoint(-51,-10)
+            ac.AddLineToPoint(-41,14)
+            ac.AddLineToPoint(-34,21)
+            ac.AddLineToPoint(34,21)
+            ac.AddLineToPoint(41,14)
+            ac.AddLineToPoint(51,-10)
+            ac.MoveToPoint(-62,-26)
+            ac.AddCurveToPoint(-40,-31,  -13,-44, 0,-44)
+            ac.MoveToPoint(62,-26)
+            ac.AddCurveToPoint(40,-31,  13,-44, 0,-44)
+            self.acx = ac
+
+            ac = gc.CreatePath()
+            ac.MoveToPoint(-41+41,14-14)
+            ac.AddLineToPoint(-34+41,21-14)
+            ac.AddLineToPoint(0+41,21-14)
+            self.door_left = ac
+
+            ac = gc.CreatePath()
+            ac.MoveToPoint(41-41,14-14)
+            ac.AddLineToPoint(34-41,21-14)
+            ac.AddLineToPoint(0-41,21-14)
+            self.door_right = ac
+
             sm = gc.CreatePath()
             sm.MoveToPoint(0,-25)
             sm.AddLineToPoint(-3,-11)
@@ -103,6 +144,13 @@ class WeaponManager(Control) :
             sm.AddLineToPoint(1,-11)
             sm.AddLineToPoint(3,-11)
             sm.AddLineToPoint(0,-25)
+
+            smx = gc.CreatePath()
+            smx.AddCircle(0,0,2)
+            smx.MoveToPoint(-5,-5)
+            smx.AddLineToPoint(5,5)
+            smx.MoveToPoint(5,-5)
+            smx.AddLineToPoint(-5,5)
 
             mm = gc.CreatePath()
             mm.MoveToPoint(0,-31)
@@ -121,11 +169,21 @@ class WeaponManager(Control) :
             mm.AddLineToPoint(2,-27)
             mm.AddLineToPoint(0,-31)
 
-            self.wps = {'sm':sm, 'mm':mm}
+            mmx = gc.CreatePath()
+            mmx.AddCircle(0,0,3)
+            mmx.MoveToPoint(-6,-6)
+            mmx.AddLineToPoint(6,6)
+            mmx.MoveToPoint(6,-6)
+            mmx.AddLineToPoint(-6,6)
+
+            self.wps = {'sm':[sm,smx], 'mm':[mm,mmx]}
         
         else :
             self.ac = None
             self.wps = None
+            self.acx = None
+            self.door_left = None
+            self.door_right = None
         
     def DrawContent(self) :
         if not self.sms :
@@ -139,6 +197,33 @@ class WeaponManager(Control) :
         gc.DrawPath(self.ac)
 
         pylons = self.sms['pylons']
+        firing = pylons['firing']
+        if firing < 0 :
+            firing = 0
+        elif firing > 100 :
+            firing = 100
+        door_pos = sin(firing/100.0*pi)
+
+        if self.h > 380 :
+            gc.PushState()
+            gc.Translate(0,250)
+            gc.SetPen(gc.pen['green'])
+            gc.DrawPath(self.acx)
+
+            gc.SetPen(gc.pen['white'])
+            gc.PushState()
+            gc.Translate(-41,14)
+            gc.Rotate(1.6*door_pos)
+            gc.DrawPath(self.door_left)
+            gc.PopState()
+            gc.PushState()
+            gc.Translate(41,14)
+            gc.Rotate(-1.6*door_pos)
+            gc.DrawPath(self.door_right)
+            gc.PopState()
+
+            gc.PopState()
+
         for i in self.pylon :
             i[0] = ''
         for i in pylons['MRM'] :
@@ -151,17 +236,23 @@ class WeaponManager(Control) :
             self.pylon[i[1]-1][0] = 'as'
             self.pylon[i[1]-1][3] = i[0]
 
+        gc.SetPen(gc.pen['green'])
         gc.SetBrush(gc.brush['green'])
         gc.SetFont(gc.font['green12'])
         for idx,i in enumerate(self.pylon) :
-            if i[0] in self.wps and idx+1 != pylons['RDY'] and idx+1 != pylons['firing'] :
+            if i[0] in self.wps and idx+1 != pylons['RDY'] :
                 gc.PushState()
                 gc.Translate(i[1],i[2])
-                gc.DrawPath(self.wps[i[0]])
+                gc.DrawPath(self.wps[i[0]][0])
                 txt = str(idx+1)
                 te = gc.GetTextExtent(txt)
                 gc.DrawText(txt, -te[0]/2, -40-te[1])
                 gc.PopState()
+                if self.h > 380 :
+                    gc.PushState()
+                    gc.Translate(i[1],250+i[4])
+                    gc.DrawPath(self.wps[i[0]][1])
+                    gc.PopState()
 
         notice = 'NO WPN SELECTED'
         if pylons['RDY']>0 and pylons['RDY']<12 and int(pylons['firing']/10)%2 :
@@ -171,11 +262,16 @@ class WeaponManager(Control) :
             i = self.pylon[pylons['RDY']-1]
             gc.PushState()
             gc.Translate(i[1],i[2])
-            gc.DrawPath(self.wps[i[0]])
+            gc.DrawPath(self.wps[i[0]][0])
             txt = str(pylons['RDY'])
             te = gc.GetTextExtent(txt)
             gc.DrawText(txt, -te[0]/2, -40-te[1])
             gc.PopState()
+            if self.h > 380 :
+                gc.PushState()
+                gc.Translate(i[1],250+i[4])
+                gc.DrawPath(self.wps[i[0]][1])
+                gc.PopState()
             notice = 'STAS %s-RDY'%(i[3])
 
         chat = self.sms['CHAT']
@@ -200,7 +296,9 @@ class SMS(Instrument) :
     def __init__(self, mgr) :
         Instrument.__init__(self, None, mgr)
         self.ctrls['WM'] = WeaponManager(self)
-        self.ctrls['WM'].SetPosition(0,0,320,320)
+
+    def Layout(self) :
+        self.ctrls['WM'].SetPosition(0,0,self.w,self.h)
 
     def DrawContent(self) :
 
