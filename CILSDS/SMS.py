@@ -3,6 +3,7 @@
 
 from Panel import Instrument
 from Control import Control
+from Buttons import *
 
 from math import pi,sin
 
@@ -304,19 +305,68 @@ class WeaponManager(Control) :
         self.drawContent(True)
         self.gc.PopState()
 
+class Doors(Control) :
+    def __init__(self, parent) :
+        Control.__init__(self, parent)
+        self.w = 50
+        self.h = 50
+        self.sms = None
+
+    def DrawContent(self) :
+        if self.sms :
+            sms = self.sms
+            pylons = sms['pylons']
+            firing = pylons['firing']
+
+            gc = self.gc
+
+            gc.SetFont(gc.font['button'])
+            txt = 'DOORS'
+            gc.DrawText(txt,5,0)
+
+            txt = 'OPEN'
+            if firing > 0 and firing <100 :
+                gc.SetPen(gc.pen['white'])
+                gc.SetFont(gc.font['white12'])
+                te = gc.GetTextExtent(txt)
+                gc.DrawRectangle(5-1,18-1,te[0]+2,te[1]+2)
+                gc.DrawText(txt,5,18)
+            else :
+                gc.SetFont(gc.font['button'])
+                gc.DrawText(txt,5,18)
+
+            txt = 'CLOSED'
+            if firing > 0 and firing <100 :
+                gc.SetFont(gc.font['button'])
+                gc.DrawText(txt,5,30)
+            else :
+                gc.SetPen(gc.pen['white'])
+                gc.SetFont(gc.font['white12'])
+                te = gc.GetTextExtent(txt)
+                gc.DrawRectangle(5-1,36-1,te[0]+2,te[1]+2)
+                gc.DrawText(txt,5,36)
+
+
 class SMS(Instrument) :
     def __init__(self, mgr) :
         Instrument.__init__(self, None, mgr)
+        self.ctrls['BtnETOPT'] = ButtonSwitch(self, 'ET OPT', ['OFF', 'ON'], align_right=True)
+        self.ctrls['BtnETRUN'] = Button(self, 'ET RUN')
+        self.ctrls['DOORS'] = Doors(self)
         self.ctrls['WM'] = WeaponManager(self)
 
     def Layout(self) :
         self.ctrls['WM'].SetPosition((self.w-320)/2,0,320,self.h)
+        self.ctrls['BtnETOPT'].SetRightTop(self.w,180)
+        self.ctrls['BtnETRUN'].SetRightTop(self.w,270)
+        self.ctrls['DOORS'].SetLeftTop(0,170)
 
     def DrawContent(self) :
 
         sms = self.mgr.data['SMS']
 
         self.ctrls['WM'].sms = sms
+        self.ctrls['DOORS'].sms = sms
 
     def DrawPreviewContent(self) :
         sms = self.mgr.data['SMS']
