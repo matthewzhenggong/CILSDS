@@ -185,7 +185,7 @@ class WeaponManager(Control) :
             self.door_left = None
             self.door_right = None
         
-    def DrawContent(self) :
+    def drawContent(self, preview) :
         if not self.sms :
             return
 
@@ -204,7 +204,7 @@ class WeaponManager(Control) :
             firing = 100
         door_pos = sin(firing/100.0*pi)
 
-        if self.h > 380 :
+        if self.h > 380 and not preview :
             gc.PushState()
             gc.Translate(0,250)
             gc.SetPen(gc.pen['green'])
@@ -248,7 +248,7 @@ class WeaponManager(Control) :
                 te = gc.GetTextExtent(txt)
                 gc.DrawText(txt, -te[0]/2, -40-te[1])
                 gc.PopState()
-                if self.h > 380 :
+                if self.h > 380 and not preview :
                     gc.PushState()
                     gc.Translate(i[1],250+i[4])
                     gc.DrawPath(self.wps[i[0]][1])
@@ -268,7 +268,7 @@ class WeaponManager(Control) :
             te = gc.GetTextExtent(txt)
             gc.DrawText(txt, -te[0]/2, -40-te[1])
             gc.PopState()
-            if self.h > 380 :
+            if self.h > 380 and not preview :
                 gc.PushState()
                 gc.Translate(i[1],250+i[4])
                 gc.DrawPath(self.wps[i[0]][1])
@@ -276,14 +276,15 @@ class WeaponManager(Control) :
                 gc.PopState()
             notice = 'STAS %s-RDY'%(i[3])
 
-        chat = self.sms['CHAT']
-        flat = self.sms['FLAT']
+        if not preview :
+            chat = self.sms['CHAT']
+            flat = self.sms['FLAT']
 
-        gc.SetPen(gc.pen['white'])
-        gc.SetBrush(gc.brush['tab'])
-        gc.DrawRectangle(-45,75,90,90)
-        gc.SetFont(gc.font['white12'])
-        gc.DrawText('CHAT{:3d}\nFLAT{:3d}'.format(chat,flat),-26,80)
+            gc.SetPen(gc.pen['white'])
+            gc.SetBrush(gc.brush['tab'])
+            gc.DrawRectangle(-45,75,90,90)
+            gc.SetFont(gc.font['white12'])
+            gc.DrawText('CHAT{:3d}\nFLAT{:3d}'.format(chat,flat),-26,80)
 
         gc.SetFont(gc.font['white20'])
         gc.SetPen(gc.pen['white'])
@@ -294,17 +295,32 @@ class WeaponManager(Control) :
 
         gc.PopState()
 
+    def DrawContent(self) :
+        self.drawContent(False)
+
+    def DrawPreview(self) :
+        self.gc.PushState()
+        self.gc.Scale(0.5,0.5)
+        self.drawContent(True)
+        self.gc.PopState()
+
 class SMS(Instrument) :
     def __init__(self, mgr) :
         Instrument.__init__(self, None, mgr)
         self.ctrls['WM'] = WeaponManager(self)
 
     def Layout(self) :
-        self.ctrls['WM'].SetPosition(0,0,self.w,self.h)
+        self.ctrls['WM'].SetPosition((self.w-320)/2,0,320,self.h)
 
     def DrawContent(self) :
 
         sms = self.mgr.data['SMS']
 
         self.ctrls['WM'].sms = sms
+
+    def DrawPreviewContent(self) :
+        sms = self.mgr.data['SMS']
+        self.ctrls['WM'].sms = sms
+
+        self.ctrls['WM'].DrawPreview()
 

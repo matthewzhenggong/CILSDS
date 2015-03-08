@@ -106,6 +106,11 @@ class Control :
         self.x = x-self.w/2
         self.y = y-self.h
 
+    def SetCenterTop(self, x, y) :
+        self.visable = True
+        self.x = x-self.w/2
+        self.y = y
+
     def Visable(self, v) :
         self.visable = v
 

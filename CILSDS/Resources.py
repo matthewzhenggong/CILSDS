@@ -45,8 +45,8 @@ def CreateResources(gc):
             wx.Font(20, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD),
             wx.Font(10, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL) ]
     gc.font['default'] = gc.CreateFont(font[0], wx.WHITE)
-    gc.font['button'] = gc.font['default']
-    gc.font['tab'] = gc.CreateFont(font[0], wx.CYAN)
+    gc.font['button'] = gc.CreateFont(font[0], wx.CYAN)
+    gc.font['tab'] = gc.font['button']
     gc.font['white12'] = gc.CreateFont(font[0], wx.WHITE)
     gc.font['white20'] = gc.CreateFont(font[1], wx.WHITE)
     gc.font['green12'] = gc.CreateFont(font[0], wx.GREEN)

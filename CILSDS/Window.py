@@ -58,6 +58,12 @@ class PreviewSlot(Slot) :
         self.upper = upper
         self.click_func = self.Swap
 
+    def BeginDraw(self) :
+        Control.BeginDraw(self)
+        for i in self.panels :
+            i.DrawPreview()
+            break
+
     def DrawContent(self) :
         Slot.DrawContent(self)
         gc = self.gc

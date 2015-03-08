@@ -84,6 +84,17 @@ class Instrument(Panel) :
         for i in self.panels :
             i.Draw()
 
+    def DrawPreviewContent(self) :
+        pass
+
+    def DrawPreview(self) :
+        if self.visable:
+            Control.BeginDraw(self)
+            self.gc.SetPen(self.gc.pen['panel_board'])
+            self.gc.DrawRectangle(0,0,self.w,self.h)
+            self.DrawPreviewContent()
+            Control.EndDraw(self)
+
     def OnTouch(self, x, y) :
         if self.get_active and Control.OnTouch(self, x, y) :
             self.mgr.ActivePanel = self

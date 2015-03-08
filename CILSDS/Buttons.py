@@ -10,6 +10,8 @@ class Button(Control) :
         self.font = 'button'
         self.pen = 'button'
         self.txt = label
+        self.w = (len(label)+1)*8
+        self.h = 20
 
     def BeginDraw(self) :
         Control.BeginDraw(self)
@@ -139,4 +141,44 @@ class ButtonTab(Button) :
         if rslt :
             self.minipanel.Swap(None)
         return rslt
+
+class ButtonSwitch(Button) :
+    def __init__(self, parent, label, stat, align_right=False) :
+        Button.__init__(self, parent, label)
+        self.w = (len(label)+1)*8
+        self.h = 30
+        self.stat = stat
+        self.idx = 0
+        self.align_right = align_right
+
+    def DrawContent(self) :
+        te = self.gc.GetTextExtent(self.txt)
+        if self.align_right :
+            x = (self.w-te[0])
+        else :
+            x = 0
+        y = self.h/2-te[1]
+        self.gc.DrawText(self.txt, x, y)
+        self.gc.StrokeLine(x, self.h/2, x+te[0], self.h/2)
+        txt = self.stat[self.idx]
+        te = self.gc.GetTextExtent(txt)
+        if self.align_right :
+            x = (self.w-te[0])
+        else :
+            x = 0
+        y = self.h/2
+        self.gc.DrawText(txt, x, y)
+
+    def OnClick(self, x, y) :
+        if self.visable :
+            x -= self.x
+            y -= self.y
+            if x >= 0 and x < self.w and y >= 0 and y < self.h :
+                self.idx += 1
+                if self.idx >= len(self.stat) :
+                    self.idx = 0
+                if self.click_func :
+                    self.click_func(ClickEvent(self,x,y))
+                return True
+        return False
 

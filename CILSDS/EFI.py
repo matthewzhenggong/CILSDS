@@ -3,6 +3,7 @@
 
 from Panel import Instrument
 from Control import Control
+from Buttons import *
 
 from math import pi,sqrt,sin,cos
 
@@ -191,6 +192,7 @@ class Clock(Control) :
 
     def DrawContent(self) :
         gc = self.gc
+
         gc.Translate(self.w/2,self.h/2)
 
         gc.SetPen(gc.pen['white'])
@@ -334,23 +336,27 @@ class EFI(Instrument) :
         self.ctrls['H'] = Clock(self)
         self.ctrls['H'].circle = 1000.0
         self.ctrls['C'] = Compass(self)
+        self.ctrls['BtnCDI'] = ButtonSwitch(self, 'CDI', ['OFF', 'ON'])
+        self.ctrls['BtnFD'] = ButtonSwitch(self, 'FD', ['OFF', 'ON'], align_right=True)
+        self.ctrls['BtnJPALS'] = Button(self, 'JPALS')
+        self.ctrls['BtnILS'] = Button(self, 'ILS')
+        self.ctrls['BtnCNTL'] = Button(self, 'CNTL>')
 
     def Layout(self) :
         margin = 60
         ahw = 320-2*margin
+        x0 = (self.w-320)/2
         rdir = 75
-        if self.w > 320 :
-            ahh = self.h - margin
-        else :
-            ahh = 512-68-margin-rdir*2
-        self.ctrls['AH'].SetPosition(margin, margin, ahw, ahh)
-        self.ctrls['V'].SetPosition(0, margin+ahh/2-margin/2, margin, margin)
-        self.ctrls['H'].SetPosition(margin+ahw, margin+ahh/2-margin/2, margin, margin)
-
-        if self.w > 320 :
-            self.ctrls['C'].SetPosition(320, 0, self.w-320, self.h)
-        else :
-            self.ctrls['C'].SetPosition(0, margin+ahh, 320, self.h-margin-ahh)
+        ahh = 512-68-margin-rdir*2
+        self.ctrls['AH'].SetPosition(x0+margin, margin, ahw, ahh)
+        self.ctrls['V'].SetPosition(x0, margin+ahh/2-margin/2, margin, margin)
+        self.ctrls['H'].SetPosition(x0+margin+ahw, margin+ahh/2-margin/2, margin, margin)
+        self.ctrls['C'].SetPosition(x0, margin+ahh, 320, self.h-margin-ahh)
+        self.ctrls['BtnCDI'].SetLeftTop(2,50)
+        self.ctrls['BtnFD'].SetRightTop(self.w,50)
+        self.ctrls['BtnJPALS'].SetCenterTop(self.w/2,2)
+        self.ctrls['BtnILS'].SetCenterTop(self.w*0.7,2)
+        self.ctrls['BtnCNTL'].SetRightTop(self.w,2)
 
     def DrawContent(self) :
 
@@ -370,24 +376,19 @@ class EFI(Instrument) :
 
         margin = 60
         ahw = 320-2*margin
+        x0 = (self.w-320)/2
         rdir = 75
-        if self.w > 320 :
-            ahh = self.h - margin
-        else :
-            ahh = 512-68-margin-rdir*2
+        ahh = 512-68-margin-rdir*2
 
         gc = self.gc
         gc.SetFont(gc.font['default'])
-        gc.DrawText(u'GS{:4.0f}\nM {:4.2f}\nα{:4.1f}\nG {:4.1f}'.format(VG,Ma,AoA,GLoad),2,margin+margin/2+ahh/2)
-        gc.DrawText(u'{:5.0f}'.format(ROC),margin+ahw+2,margin+margin/2+ahh/2+5)
+        gc.DrawText(u'GS{:4.0f}\nM {:4.2f}\nα{:4.1f}\nG {:4.1f}'.format(VG,Ma,AoA,GLoad),x0+2,margin+margin/2+ahh/2)
+        gc.DrawText(u'{:5.0f}'.format(ROC),x0+margin+ahw+2,margin+margin/2+ahh/2+5)
         if AGL > 0 :
-            gc.DrawText(u'R{:5.0f}'.format(AGL),margin+ahw+2,margin+margin/2+ahh/2+20)
+            gc.DrawText(u'R{:5.0f}'.format(AGL),x0+margin+ahw+2,margin+margin/2+ahh/2+20)
 
         gc.SetPen(gc.pen['white1'])
-        if self.w > 320 :
-            gc.DrawLines([(320,0),(320,self.h)])
-        else :
-            gc.DrawLines([(0,margin+ahh),(320,margin+ahh)])
+        gc.DrawLines([(0,margin+ahh),(self.w,margin+ahh)])
 
         ah = self.ctrls['AH']
         ah.pitch = pitch
@@ -399,4 +400,28 @@ class EFI(Instrument) :
         self.ctrls['V'].val = VC
         self.ctrls['H'].val = ASL
         self.ctrls['C'].val = heading
+
+    def DrawPreviewContent(self) :
+        VC = self.mgr.data['VC']
+        ASL=self.mgr.data['ASL']
+        heading=self.mgr.data['heading']
+
+        self.ctrls['V'].val = VC
+        self.ctrls['H'].val = ASL
+
+        gc = self.gc
+
+        gc.PushState()
+        self.ctrls['V'].DrawContent()
+        gc.PopState()
+
+        gc.PushState()
+        gc.Translate(self.w-self.ctrls['H'].w,0)
+        self.ctrls['H'].DrawContent()
+        gc.PopState()
+
+        gc.SetFont(gc.font['white20'])
+        txt = '{:03.0f}'.format(heading)
+        te = gc.GetTextExtent(txt)
+        gc.DrawText(txt,(self.w-te[0])/2,self.h/2)
 
