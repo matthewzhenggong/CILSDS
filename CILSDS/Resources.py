@@ -29,6 +29,7 @@ def CreateResources(gc):
     gc.pen['big_purple'] = gc.CreatePen(wx.Pen(wx.Colour(0xCC,0x00,0xFF), 7))
     gc.pen['purple'] = gc.CreatePen(wx.Pen(wx.Colour(0xCC,0x00,0xFF), 2))
     gc.pen['white_sto'] = gc.CreatePen(wx.Pen(wx.WHITE, 2, wx.PENSTYLE_SHORT_DASH ))
+    gc.pen['cursor'] = gc.pen['green']
     gc.brush = {}
     gc.brush['none'] = gc.CreateBrush(wx.NullBrush)
     gc.brush['default'] = gc.brush['none']

@@ -121,7 +121,6 @@ class MenuPanel(Panel) :
             x = x - self.x
             y = y - self.y
             if x >= 0 and x < self.w and y >= 0 and y < self.h :
-                self.mgr.ActivePanel = self
                 self.pt = (x,y)
                 rslt = True
         return rslt
@@ -419,8 +418,6 @@ class Window(Panel) :
         if self.visable:
             x = x - self.x
             y = y - self.y
-            if x >= 0 and x < self.w and y >= 0 and y < self.h :
-                self.mgr.ActivePanel = self
             if self.ShowingMenu :
                 if self.MenuPanel.OnTouch(x,y) :
                     x = -1

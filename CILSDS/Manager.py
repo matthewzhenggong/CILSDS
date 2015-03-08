@@ -17,6 +17,7 @@ class Manager(wx.Panel):
     def __init__(self, parent, log):
         self.log = log
         wx.Panel.__init__(self, parent, -1)
+        self.SetWindowStyle(wx.WANTS_CHARS)
         self.SetForegroundColour(wx.GREEN)
         self.SetBackgroundColour(wx.BLACK)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
@@ -24,6 +25,8 @@ class Manager(wx.Panel):
         self.Bind(wx.EVT_MOTION, self.OnMotion)
         self.Bind(wx.EVT_LEFT_DOWN, self.OnDown)
         self.Bind(wx.EVT_LEFT_UP, self.OnUp)
+        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
+        self.Bind(wx.EVT_KEY_UP, self.OnKeyUp)
 
         self.data = {
         'VC' : 287.5,
@@ -70,6 +73,8 @@ class Manager(wx.Panel):
 
         self.clicking = False
         self.enduring = 0
+        self.cursor = [100,100]
+        self.cursor_step = 1
 
         self.dc = None
 
@@ -129,6 +134,7 @@ class Manager(wx.Panel):
             dc.Blit(0,0,self.sz.width,self.sz.height,self.dc, 0, 0)
 
     def OnMotion(self, evt):
+        self.SetFocus()
         if self.clicking :
             pos = evt.GetPosition()
             self.cur_pos = pos
@@ -162,6 +168,42 @@ class Manager(wx.Panel):
         for i in self.panels :
             i.OnTouch(x,y) 
 
+    def OnKeyUp(self, event):
+        self.cursor_step = 1
+
+    def AccelCursor(self):
+        if self.cursor_step < 10 :
+            self.cursor_step += 0.2
+        if self.cursor[0] < 0 :
+            self.cursor[0] = 0 
+        elif self.cursor[0] > 1280 :
+            self.cursor[0] = 1280 
+        if self.cursor[1] < 0 :
+            self.cursor[1] = 0 
+        elif self.cursor[1] > 512 :
+            self.cursor[1] = 512
+        self.OnTouch(self.cursor[0]/self.base_scale, self.cursor[1]/self.base_scale)
+
+    def OnKeyDown(self, event):
+        k = event.GetKeyCode()
+        if k in [wx.WXK_LEFT, wx.WXK_NUMPAD_LEFT, wx.WXK_NUMPAD4, ord('a')]:
+            self.cursor[0] -= self.cursor_step
+            self.AccelCursor()
+        elif k in [wx.WXK_RIGHT, wx.WXK_NUMPAD_RIGHT, wx.WXK_NUMPAD6, ord('d')] :
+            self.cursor[0] += self.cursor_step
+            self.AccelCursor()
+        elif k in [wx.WXK_UP, wx.WXK_NUMPAD_UP, wx.WXK_NUMPAD8, ord('w')] :
+            self.cursor[1] -= self.cursor_step
+            self.AccelCursor()
+        elif k in [wx.WXK_DOWN, wx.WXK_NUMPAD_DOWN, wx.WXK_NUMPAD2, ord('s')] :
+            self.cursor[1] += self.cursor_step
+            self.AccelCursor()
+        elif k in [wx.WXK_RETURN, wx.WXK_SPACE] :
+            self.OnClick(self.cursor[0]/self.base_scale, self.cursor[1]/self.base_scale)
+        elif self.ActivePanel :
+            self.ActivePanel.OnKey(k, self.cursor)
+        self.Refresh(False)
+
     def Draw(self):
         tick0 = time.time()
 
@@ -172,6 +214,11 @@ class Manager(wx.Panel):
         for i in self.panels :
             i.Draw()
 
+        gc.SetPen(gc.pen['cursor'])
+        gc.StrokeLine(self.cursor[0]-4, self.cursor[1]-6,
+                    self.cursor[0]+4, self.cursor[1]-6)
+        gc.StrokeLine(self.cursor[0]-4, self.cursor[1]+6,
+                    self.cursor[0]+4, self.cursor[1]+6)
         gc.PopState()
         if self.clicking :
             gc.SetPen(gc.pen['clicking_cross'])

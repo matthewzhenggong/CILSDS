@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from Control import Control
+import wx
 
 class Panel(Control) :
     def __init__(self, parent, mgr) :
@@ -100,4 +101,7 @@ class Instrument(Panel) :
         if self.get_active and Control.OnTouch(self, x, y) :
             self.mgr.ActivePanel = self
         return Panel.OnTouch(self, x, y)
+
+    def OnKey(self, key, cursor) :
+        pass
 
