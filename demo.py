@@ -1,8 +1,12 @@
 #!/bin/env python
 # -*- coding: utf-8 -*-
 
-import wx
 import sys
+if not hasattr(sys, 'frozen'):
+    import wxversion
+    wxversion.select('3.0')
+
+import wx
 import os
 import os.path as path
 import argparse
