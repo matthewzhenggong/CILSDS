@@ -184,24 +184,24 @@ class Manager(wx.Panel):
             self.cursor[1] = 0 
         elif self.cursor[1] > 512 :
             self.cursor[1] = 512
-        self.OnTouch(self.cursor[0]/self.base_scale, self.cursor[1]/self.base_scale)
+        self.OnTouch(self.cursor[0], self.cursor[1])
 
     def OnKeyDown(self, event):
         k = event.GetKeyCode()
-        if k in [wx.WXK_LEFT, wx.WXK_NUMPAD_LEFT, wx.WXK_NUMPAD4, ord('a')]:
+        if k in [wx.WXK_LEFT, wx.WXK_NUMPAD_LEFT, wx.WXK_NUMPAD4, ord('A')]:
             self.cursor[0] -= self.cursor_step
             self.AccelCursor()
-        elif k in [wx.WXK_RIGHT, wx.WXK_NUMPAD_RIGHT, wx.WXK_NUMPAD6, ord('d')] :
+        elif k in [wx.WXK_RIGHT, wx.WXK_NUMPAD_RIGHT, wx.WXK_NUMPAD6, ord('D')] :
             self.cursor[0] += self.cursor_step
             self.AccelCursor()
-        elif k in [wx.WXK_UP, wx.WXK_NUMPAD_UP, wx.WXK_NUMPAD8, ord('w')] :
+        elif k in [wx.WXK_UP, wx.WXK_NUMPAD_UP, wx.WXK_NUMPAD8, ord('W')] :
             self.cursor[1] -= self.cursor_step
             self.AccelCursor()
-        elif k in [wx.WXK_DOWN, wx.WXK_NUMPAD_DOWN, wx.WXK_NUMPAD2, ord('s')] :
+        elif k in [wx.WXK_DOWN, wx.WXK_NUMPAD_DOWN, wx.WXK_NUMPAD2, ord('S')] :
             self.cursor[1] += self.cursor_step
             self.AccelCursor()
         elif k in [wx.WXK_RETURN, wx.WXK_SPACE] :
-            self.OnClick(self.cursor[0]/self.base_scale, self.cursor[1]/self.base_scale)
+            self.OnClick(self.cursor[0], self.cursor[1])
         elif self.ActivePanel :
             self.ActivePanel.OnKey(k, self.cursor)
         self.Refresh(False)
