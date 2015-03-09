@@ -130,7 +130,7 @@ class ArtificialHorizon(Control) :
                 ang -= 360
             elif ang - self.roll < -180 :
                 ang += 360
-            if ang < 45 and ang > -45 or abs(ang-self.roll)<30 :
+            if ang < 40 and ang > -40 or abs(ang-self.roll)<30 :
                 if i % 3 == 0 :
                     gc.StrokeLine(0,h*0.32,0,h*0.37)
                 elif ang < 45 and ang > -45 :

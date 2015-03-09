@@ -77,7 +77,7 @@ class Manager(wx.Panel):
                 'H2':Header2(self) \
                 }
 
-        self.Body0 = Window(self,0, 0, 0, 640, 512, 1, \
+        self.Body0 = Window(self,0, 0, 0, 640, 512, 3, \
                 ['EFI','SMS','FCS','HUD','DAS','ASR', 'H1'])
         self.Body1 = Window(self,1, 640, 0, 640, 512, 4, \
                 ['TSD-1','TSD-2','FCS','HUD','DAS','ASR', 'H2'])
