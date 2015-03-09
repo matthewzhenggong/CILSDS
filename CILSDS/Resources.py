@@ -26,6 +26,7 @@ def CreateResources(gc):
     gc.pen['white'] = gc.CreatePen(wx.Pen(wx.WHITE, 2))
     gc.pen['black'] = gc.CreatePen(wx.Pen(wx.BLACK, 2))
     gc.pen['white1'] = gc.CreatePen(wx.Pen(wx.WHITE, 1))
+    gc.pen['white1.5'] = gc.CreatePen(wx.Pen(wx.WHITE, 1.5))
     gc.pen['big_purple'] = gc.CreatePen(wx.Pen(wx.Colour(0xCC,0x00,0xFF), 7))
     gc.pen['purple'] = gc.CreatePen(wx.Pen(wx.Colour(0xCC,0x00,0xFF), 2))
     gc.pen['white_sto'] = gc.CreatePen(wx.Pen(wx.WHITE, 2, wx.PENSTYLE_SHORT_DASH ))

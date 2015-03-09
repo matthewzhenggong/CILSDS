@@ -57,6 +57,13 @@ class Manager(wx.Panel):
         'NAV' : {'cur':1,
             'PNTS':[(23.0, 109.0, 5000),(23.0, 108.5, 5000),(23.2, 108.0, 5000),(22.2, 107.0, 5000)]
             },
+        'CONTACTS' : {'select':1,
+            'OBJS':[{'pos':(23.0, 107.0, 5000), 'vel':(0,300,0), 'type':'airplane', 'id':'foe'},
+                    {'pos':(23.2, 108.0, 5000), 'vel':(0,-300,0), 'type':'airplane', 'id':'friend'},
+                    {'pos':(23.0, 107.5, 5000), 'vel':(300,0,0), 'type':'airplane', 'id':'unknown'},
+                    {'pos':(23.2, 107.5, 5000), 'vel':(0,-1000,0), 'type':'missile', 'id':'friend'},
+                   ],
+            },
         }
 
         self.using_panels = {}

@@ -30,7 +30,7 @@ class Stat(Control) :
         self.nav = None
         self.lat = 23
         self.lon = 112
-        self.h = 5000
+        self.alt = 5000
 
     def RebuildPath(self) :
         if self.gc :
@@ -68,12 +68,36 @@ class Stat(Control) :
             gc.Translate(self.w/2, 280)
 
         r = 130
-        gc.SetPen(gc.pen['white1'])
+        r4 = self.parent.ctrls['RANGE'].GetValue()
+
+        heading = radians(self.heading)
+        cos_heading = cos(heading)
+        sin_heading = sin(heading)
+
+        gc.SetPen(gc.pen['white1.5'])
         gc.SetFont(gc.font['default'])
         gc.PushState()
-        gc.Rotate(-self.heading/57.3)
+        gc.Rotate(-heading)
         gc.StrokePath(self.compass_symbol)
+        gc.PopState()
+
         if not preview :
+            txt = '{:.0f}'.format(r4*0.25)
+            te = gc.GetTextExtent(txt)
+            gc.DrawText(txt,-r/2*sin_heading-te[0]/2,-r/2*cos_heading-te[1]/2)
+
+            txt = '{:.0f}'.format(r4*0.5)
+            te = gc.GetTextExtent(txt)
+            gc.DrawText(txt,-r*sin_heading-te[0]/2,-r*cos_heading-te[1]/2)
+
+            txt = '{:.0f}'.format(r4*0.75)
+            te = gc.GetTextExtent(txt)
+            gc.DrawText(txt,-r*1.5*sin_heading-te[0]/2,-r*1.5*cos_heading-te[1]/2)
+
+            txt = '{:.0f}'.format(r4)
+            te = gc.GetTextExtent(txt)
+            gc.DrawText(txt,-r*2*sin_heading-te[0]/2,-r*2*cos_heading-te[1]/2)
+
             for i in xrange(12) :
                 if i == 0 :
                     txt = 'N'
@@ -86,10 +110,9 @@ class Stat(Control) :
                 else :
                     txt = '{:.0f}'.format(i*3)
                 te = gc.GetTextExtent(txt)
-                gc.DrawText(txt,-te[0]/2,-0.88*r)
-                gc.Rotate(pi/6.0)
+                gc.DrawText(txt,-te[0]/2+0.88*r*sin(-heading+i*pi/6.0),-te[1]/2-0.88*r*cos(-heading+i*pi/6.0))
 
-        scale = (2*r)/(self.parent.ctrls['RANGE'].GetValue()*1000.0)
+        scale = (2*r)/(r4*1000.0)
         if self.nav :
             (deg2m_lat, deg2m_lon) = LatLon2Meter(radians(self.lat))
             gc.SetPen(gc.pen['white'])
@@ -97,8 +120,10 @@ class Stat(Control) :
             c = gc.CreatePath()
             first = True
             for i,p in enumerate(self.nav['PNTS']) :
-                y = -(p[0]-self.lat)*deg2m_lat*scale
-                x = (p[1]-self.lon)*deg2m_lon*scale
+                y1 = -(p[0]-self.lat)*deg2m_lat*scale
+                x1 = (p[1]-self.lon)*deg2m_lon*scale
+                x = cos_heading*x1 + sin_heading*y1
+                y =-sin_heading*x1 + cos_heading*y1
                 if i ==self.nav['cur'] :
                     c.AddCircle(x,y,6)
                 c.AddCircle(x,y,3)
@@ -109,8 +134,6 @@ class Stat(Control) :
                     l.AddLineToPoint(x,y)
             gc.StrokePath(l)
             gc.StrokePath(c)
-
-        gc.PopState()
 
         gc.SetPen(gc.pen['white'])
         gc.DrawSymAC(gc,0,0,8,12)
@@ -194,8 +217,9 @@ class TSD1(Instrument) :
         self.ctrls['STA'].nav = nav
         self.ctrls['STA'].lat = lat
         self.ctrls['STA'].lon = lon
-        self.ctrls['STA'].h = h
+        self.ctrls['STA'].alt = h
 
     def DrawPreviewContent(self) :
+        self.DrawContent()
         self.ctrls['STA'].DrawPreview()
 
