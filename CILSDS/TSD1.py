@@ -5,7 +5,7 @@ from Panel import Instrument
 from Control import Control
 from Buttons import *
 
-from math import pi,sqrt,sin,cos,radians
+from math import pi,sqrt,sin,cos,atan2,radians
 
 def LatLon2Meter(lat) :
     m1 = 111132.92
@@ -28,6 +28,7 @@ class Stat(Control) :
         Control.__init__(self, parent)
         self.heading = 0
         self.nav = None
+        self.contacts = None
         self.lat = 23
         self.lon = 112
         self.alt = 5000
@@ -112,9 +113,9 @@ class Stat(Control) :
                 te = gc.GetTextExtent(txt)
                 gc.DrawText(txt,-te[0]/2+0.88*r*sin(-heading+i*pi/6.0),-te[1]/2-0.88*r*cos(-heading+i*pi/6.0))
 
+        (deg2m_lat, deg2m_lon) = LatLon2Meter(radians(self.lat))
         scale = (2*r)/(r4*1000.0)
         if self.nav :
-            (deg2m_lat, deg2m_lon) = LatLon2Meter(radians(self.lat))
             gc.SetPen(gc.pen['white'])
             l = gc.CreatePath()
             c = gc.CreatePath()
@@ -134,6 +135,38 @@ class Stat(Control) :
                     l.AddLineToPoint(x,y)
             gc.StrokePath(l)
             gc.StrokePath(c)
+
+        if self.contacts :
+            select = self.contacts['select']
+            for i,obj in enumerate(self.contacts['OBJS']) :
+                p = obj['pos']
+                y1 = -(p[0]-self.lat)*deg2m_lat*scale
+                x1 = (p[1]-self.lon)*deg2m_lon*scale
+                x = cos_heading*x1 + sin_heading*y1
+                y =-sin_heading*x1 + cos_heading*y1
+                idf = obj['idf']
+                if idf == 'foe' :
+                    gc.SetPen(gc.pen['red'])
+                elif idf == 'friend' :
+                    gc.SetPen(gc.pen['green'])
+                else :
+                    gc.SetPen(gc.pen['yellow'])
+                typ = obj['type']
+                if typ == 'missile' :
+                    gc.StrokeLines([(x-5,y),(x,y-5),(x+5,y)])
+                else :
+                    gc.StrokeLines([(x-5,y),(x-5,y-5),(x+5,y-5),(x+5,y)])
+                vel = obj['vel']
+                speed = sqrt(vel[0]**2+vel[1]**2)/300.0*5+5
+                if speed > 20 :
+                    speed = 20
+                hd = atan2(vel[1],vel[0])
+                gc.StrokeLines([(x,y),(x+speed*sin(-heading+hd),y-speed*cos(-heading+hd))])
+                if select == i :
+                    c = gc.CreatePath()
+                    c.AddCircle(x-1,y-1,12)
+                    gc.SetPen(gc.pen['lock'])
+                    gc.StrokePath(c)
 
         gc.SetPen(gc.pen['white'])
         gc.DrawSymAC(gc,0,0,8,12)
@@ -212,9 +245,11 @@ class TSD1(Instrument) :
         lon=self.mgr.data['lon']
         h=self.mgr.data['ASL']
         nav=self.mgr.data['NAV']
+        contacts=self.mgr.data['CONTACTS']
 
         self.ctrls['STA'].heading = heading
         self.ctrls['STA'].nav = nav
+        self.ctrls['STA'].contacts = contacts
         self.ctrls['STA'].lat = lat
         self.ctrls['STA'].lon = lon
         self.ctrls['STA'].alt = h

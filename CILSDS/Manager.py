@@ -14,6 +14,14 @@ from TSD1 import TSD1 as TSD
 from Header1 import Header1
 from Header2 import Header2
 
+from TFLIR import TFLIR
+from SRCH import SRCH
+from TWD import TWD
+from ASR import ASR
+#from FUEL import FUEL
+#from HUD import HUD
+#from ENG import ENG
+
 class Manager(wx.Panel):
     def __init__(self, parent, log):
         self.log = log
@@ -58,23 +66,30 @@ class Manager(wx.Panel):
             'PNTS':[(23.0, 109.0, 5000),(23.0, 108.5, 5000),(23.2, 108.0, 5000),(22.2, 107.0, 5000)]
             },
         'CONTACTS' : {'select':1,
-            'OBJS':[{'pos':(23.0, 107.0, 5000), 'vel':(0,300,0), 'type':'airplane', 'id':'foe'},
-                    {'pos':(23.2, 108.0, 5000), 'vel':(0,-300,0), 'type':'airplane', 'id':'friend'},
-                    {'pos':(23.0, 107.5, 5000), 'vel':(300,0,0), 'type':'airplane', 'id':'unknown'},
-                    {'pos':(23.2, 107.5, 5000), 'vel':(0,-1000,0), 'type':'missile', 'id':'friend'},
+            'OBJS':[{'pos':(23.0, 107.0, 5000), 'vel':(0,300,0), 'type':'airplane', 'idf':'foe'},
+                    {'pos':(23.2, 108.0, 5000), 'vel':(0,-300,0), 'type':'airplane', 'idf':'friend'},
+                    {'pos':(23.0, 107.5, 5000), 'vel':(300,0,0), 'type':'airplane', 'idf':'unknown'},
+                    {'pos':(23.2, 107.5, 5000), 'vel':(0,-1000,0), 'type':'missile', 'idf':'friend'},
                    ],
             },
         }
 
         self.using_panels = {}
         self.free_panels = { \
-                'EFI':EFI(self), \
-                'SMS':SMS(self), \
-                'TSD-1':TSD(self), \
-                'TSD-2':TSD(self), \
-                'TSD-3':TSD(self), \
-                'H1':Header1(self), \
-                'H2':Header2(self) \
+                'EFI':EFI(self),
+                'SMS':SMS(self),
+                'TSD-1':TSD(self),
+                'TSD-2':TSD(self),
+                'TSD-3':TSD(self),
+                'TFLIR':TFLIR(self),
+                'SRCH':SRCH(self),
+                'TWD':TWD(self),
+                'ASR':ASR(self),
+                #'FUEL':FUEL(self),
+                #'HUD':HUD(self),
+                #'ENG':ENG(self),
+                'H1':Header1(self),
+                'H2':Header2(self),
                 }
 
         self.Body0 = Window(self,0, 0, 0, 640, 512, 3, \

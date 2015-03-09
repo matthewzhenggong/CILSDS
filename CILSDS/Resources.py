@@ -17,6 +17,7 @@ def CreateResources(gc):
     gc.pen['panel_board'] = gc.CreatePen(wx.Pen(wx.GREEN, 1, wx.PENSTYLE_SOLID))
     gc.pen['act_panel_board'] = gc.CreatePen(wx.Pen(wx.Colour(0xCF,0xFF,0x50), 3))
     gc.pen['focus'] = gc.CreatePen(wx.Pen(wx.WHITE, 1, wx.PENSTYLE_SHORT_DASH))
+    gc.pen['lock'] = gc.CreatePen(wx.Pen(wx.RED, 3, wx.PENSTYLE_SHORT_DASH))
     gc.pen['clicking_cross'] = gc.CreatePen(wx.Pen(wx.RED, 2, wx.PENSTYLE_SHORT_DASH))
     gc.pen['button'] = gc.CreatePen(wx.Pen(wx.CYAN, 2, wx.PENSTYLE_SOLID))
     gc.pen['red'] = gc.CreatePen(wx.Pen(wx.RED, 2))
@@ -24,6 +25,7 @@ def CreateResources(gc):
     gc.pen['green'] = gc.CreatePen(wx.Pen(wx.GREEN, 2))
     gc.pen['green1'] = gc.CreatePen(wx.Pen(wx.GREEN, 1))
     gc.pen['white'] = gc.CreatePen(wx.Pen(wx.WHITE, 2))
+    gc.pen['yellow'] = gc.CreatePen(wx.Pen(wx.YELLOW, 2))
     gc.pen['black'] = gc.CreatePen(wx.Pen(wx.BLACK, 2))
     gc.pen['white1'] = gc.CreatePen(wx.Pen(wx.WHITE, 1))
     gc.pen['white1.5'] = gc.CreatePen(wx.Pen(wx.WHITE, 1.5))
@@ -42,6 +44,7 @@ def CreateResources(gc):
     gc.brush['ground'] = gc.CreateBrush(wx.Brush(wx.Colour(0x7D,0x3B,0x42)))
     gc.brush['sky'] = gc.CreateBrush(wx.Brush(wx.Colour(0x23,0x51,0x7C)))
     gc.brush['tab'] = gc.CreateBrush(wx.Brush(wx.Colour(0x00,0x00,0x00, 0x7E)))
+    gc.brush['ir_ground'] = gc.CreateBrush(wx.Brush(wx.Colour(0x9A,0xAA,0x92)))
     gc.font = {}
     font = [wx.Font(12, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD),
             wx.Font(20, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD),
