@@ -10,7 +10,7 @@ from Window import Window
 from Resources import CreateResources
 from EFI import EFI
 from SMS import SMS
-from TSD1 import TSD1
+from TSD1 import TSD1 as TSD
 from Header1 import Header1
 from Header2 import Header2
 
@@ -60,7 +60,9 @@ class Manager(wx.Panel):
         self.free_panels = { \
                 'EFI':EFI(self), \
                 'SMS':SMS(self), \
-                'TSD-1':TSD1(self), \
+                'TSD-1':TSD(self), \
+                'TSD-2':TSD(self), \
+                'TSD-3':TSD(self), \
                 'H1':Header1(self), \
                 'H2':Header2(self) \
                 }
