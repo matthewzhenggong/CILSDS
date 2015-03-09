@@ -195,7 +195,7 @@ class WeaponManager(Control) :
         gc.PushState()
         gc.SetPen(gc.pen['green'])
         gc.Translate(164,113)
-        gc.DrawPath(self.ac)
+        gc.StrokePath(self.ac)
 
         pylons = self.sms['pylons']
         firing = pylons['firing']
@@ -209,7 +209,7 @@ class WeaponManager(Control) :
             gc.PushState()
             gc.Translate(0,250)
             gc.SetPen(gc.pen['green'])
-            gc.DrawPath(self.acx)
+            gc.StrokePath(self.acx)
 
             gc.SetPen(gc.pen['white'])
             gc.PushState()
@@ -342,6 +342,7 @@ class Doors(Control) :
             else :
                 gc.SetPen(gc.pen['white'])
                 gc.SetFont(gc.font['white12'])
+                gc.SetBrush(gc.brush['none'])
                 te = gc.GetTextExtent(txt)
                 gc.DrawRectangle(5-1,36-1,te[0]+2,te[1]+2)
                 gc.DrawText(txt,5,36)

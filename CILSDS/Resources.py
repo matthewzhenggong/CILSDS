@@ -34,7 +34,7 @@ def CreateResources(gc):
     gc.brush['none'] = gc.CreateBrush(wx.NullBrush)
     gc.brush['default'] = gc.brush['none']
     gc.brush['back'] = gc.CreateBrush(wx.BLACK_BRUSH)
-    gc.brush['button'] = gc.brush['none']
+    gc.brush['button'] = gc.CreateBrush(wx.Brush(wx.CYAN))
     gc.brush['blue'] = gc.CreateBrush(wx.Brush(wx.BLUE))
     gc.brush['green'] = gc.CreateBrush(wx.Brush(wx.GREEN))
     gc.brush['white'] = gc.CreateBrush(wx.Brush(wx.WHITE))

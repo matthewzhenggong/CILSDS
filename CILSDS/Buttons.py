@@ -182,3 +182,54 @@ class ButtonSwitch(Button) :
                 return True
         return False
 
+class ButtonNumSpin(Button) :
+    def __init__(self, parent, value_range, idx) :
+        self.idx = idx
+        self.values = value_range
+        self.value = self.values[self.idx]
+        Button.__init__(self, parent, '{:4.1f}'.format(self.value))
+        self.w = 40
+        self.h = 60
+
+    def GetValue(self) :
+        return self.value
+
+    def Next(self) :
+        if self.idx < len(self.values)-1 :
+            self.idx += 1
+            self.value = self.values[self.idx]
+            self.txt = '{:4.1f}'.format(self.value)
+
+    def Previous(self) :
+        if self.idx > 0 :
+            self.idx -= 1
+            self.value = self.values[self.idx]
+            self.txt = '{:4.1f}'.format(self.value)
+
+    def DrawContent(self) :
+        te = self.gc.GetTextExtent(self.txt)
+        gc = self.gc
+
+        x = (self.w-te[0])/2
+        y = (self.h-te[1])/2
+        self.gc.DrawText(self.txt, x, y)
+
+        w2 = self.w/2
+        gc.DrawLines([(w2-8,y-5),(w2,0),(w2+8,y-5)])
+        gc.DrawLines([(w2-8,y+te[1]+5),(w2,self.h),(w2+8,y+te[1]+5)])
+
+
+    def OnClick(self, x, y) :
+        if self.visable :
+            x -= self.x
+            y -= self.y
+            if x >= 0 and x < self.w and y >= 0 and y < self.h :
+                if y > self.h/2+10 :
+                    self.Previous()
+                elif y < self.h/2-10 :
+                    self.Next()
+                if self.click_func :
+                    self.click_func(ClickEvent(self,x,y))
+                return True
+        return False
+
