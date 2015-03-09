@@ -18,9 +18,9 @@ from TFLIR import TFLIR
 from SRCH import SRCH
 from TWD import TWD
 from ASR import ASR
-#from FUEL import FUEL
+from FUEL import FUEL
 #from HUD import HUD
-#from ENG import ENG
+from ENG import ENG
 
 class Manager(wx.Panel):
     def __init__(self, parent, log):
@@ -85,9 +85,9 @@ class Manager(wx.Panel):
                 'SRCH':SRCH(self),
                 'TWD':TWD(self),
                 'ASR':ASR(self),
-                #'FUEL':FUEL(self),
+                'FUEL':FUEL(self),
                 #'HUD':HUD(self),
-                #'ENG':ENG(self),
+                'ENG':ENG(self),
                 'H1':Header1(self),
                 'H2':Header2(self),
                 }
@@ -246,6 +246,8 @@ class Manager(wx.Panel):
         gc.SetPen(gc.pen['cursor'])
         gc.StrokeLine(self.cursor[0]-4, self.cursor[1]-6,
                     self.cursor[0]+4, self.cursor[1]-6)
+        gc.StrokeLine(self.cursor[0]-1, self.cursor[1],
+                    self.cursor[0]+2, self.cursor[1])
         gc.StrokeLine(self.cursor[0]-4, self.cursor[1]+6,
                     self.cursor[0]+4, self.cursor[1]+6)
         gc.PopState()
