@@ -246,8 +246,8 @@ class Manager(wx.Panel):
         gc.SetPen(gc.pen['cursor'])
         gc.StrokeLine(self.cursor[0]-4, self.cursor[1]-6,
                     self.cursor[0]+4, self.cursor[1]-6)
-        gc.StrokeLine(self.cursor[0]-1, self.cursor[1],
-                    self.cursor[0]+2, self.cursor[1])
+        gc.StrokeLine(self.cursor[0]-0.01, self.cursor[1],
+                    self.cursor[0]+0.01, self.cursor[1])
         gc.StrokeLine(self.cursor[0]-4, self.cursor[1]+6,
                     self.cursor[0]+4, self.cursor[1]+6)
         gc.PopState()

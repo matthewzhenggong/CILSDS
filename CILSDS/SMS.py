@@ -215,12 +215,12 @@ class WeaponManager(Control) :
             gc.PushState()
             gc.Translate(-41,14)
             gc.Rotate(1.6*door_pos)
-            gc.DrawPath(self.door_left)
+            gc.StrokePath(self.door_left)
             gc.PopState()
             gc.PushState()
             gc.Translate(41,14)
             gc.Rotate(-1.6*door_pos)
-            gc.DrawPath(self.door_right)
+            gc.StrokePath(self.door_right)
             gc.PopState()
 
             gc.PopState()
@@ -257,25 +257,29 @@ class WeaponManager(Control) :
                     gc.PopState()
 
         notice = 'NO WPN SELECTED'
-        if pylons['RDY']>0 and pylons['RDY']<12 and int(pylons['firing']/10)%2 :
-            gc.SetPen(gc.pen['white'])
-            gc.SetBrush(gc.brush['white'])
-            gc.SetFont(gc.font['white12'])
+        if pylons['RDY']>0 and pylons['RDY']<12 :
             i = self.pylon[pylons['RDY']-1]
-            gc.PushState()
-            gc.Translate(i[1],i[2])
-            gc.DrawPath(self.wps[i[0]][0])
-            txt = str(pylons['RDY'])
-            te = gc.GetTextExtent(txt)
-            gc.DrawText(txt, -te[0]/2, -40-te[1])
-            gc.PopState()
-            if self.h > 380 and not preview :
+            if int(pylons['firing']/10)%2 :
+                gc.SetPen(gc.pen['white'])
+                gc.SetBrush(gc.brush['white'])
+                gc.SetFont(gc.font['white12'])
                 gc.PushState()
-                gc.Translate(i[1],250+i[4])
-                gc.DrawPath(self.wps[i[0]][1])
-                gc.DrawText(txt, -te[0]/2, -10-te[1])
+                gc.Translate(i[1],i[2])
+                gc.DrawPath(self.wps[i[0]][0])
+                txt = str(pylons['RDY'])
+                te = gc.GetTextExtent(txt)
+                gc.DrawText(txt, -te[0]/2, -40-te[1])
                 gc.PopState()
-            notice = 'STAS %s-RDY'%(i[3])
+                if self.h > 380 and not preview :
+                    gc.PushState()
+                    gc.Translate(i[1],250+i[4])
+                    gc.DrawPath(self.wps[i[0]][1])
+                    gc.DrawText(txt, -te[0]/2, -10-te[1])
+                    gc.PopState()
+            if pylons['firing'] > 0 :
+                notice = 'STAS %s-REL'%(i[3])
+            else :
+                notice = 'STAS %s-RDY'%(i[3])
 
         if not preview :
             chat = self.sms['CHAT']
@@ -328,6 +332,7 @@ class Doors(Control) :
             if firing > 0 and firing <100 :
                 gc.SetPen(gc.pen['white'])
                 gc.SetFont(gc.font['white12'])
+                gc.SetBrush(gc.brush['none'])
                 te = gc.GetTextExtent(txt)
                 gc.DrawRectangle(5-1,18-1,te[0]+2,te[1]+2)
                 gc.DrawText(txt,5,18)

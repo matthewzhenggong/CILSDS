@@ -32,6 +32,8 @@ class Stat(Control) :
         self.lat = 23
         self.lon = 112
         self.alt = 5000
+        self.select_x = -1
+        self.select_y = -1
 
     def RebuildPath(self) :
         if self.gc :
@@ -136,6 +138,8 @@ class Stat(Control) :
             gc.StrokePath(l)
             gc.StrokePath(c)
 
+        select_obj = None
+        select_circle = 5*5
         if self.contacts :
             select = self.contacts['select']
             for i,obj in enumerate(self.contacts['OBJS']) :
@@ -167,6 +171,22 @@ class Stat(Control) :
                     c.AddCircle(x-1,y-1,12)
                     gc.SetPen(gc.pen['lock'])
                     gc.StrokePath(c)
+                cc = (x - self.select_x)**2 + (y - self.select_y)**2 
+                if cc < select_circle :
+                    select_obj = obj
+                    select_circle = cc
+                    select_x = x
+                    select_y = y
+
+        if select_obj :
+            self.select_x = select_x
+            self.select_y = select_y
+            gc.SetPen(gc.pen['green'])
+            gc.SetBrush(gc.brush['back'])
+            gc.DrawRectangle(50,0, 100,100)
+            vel = obj['vel']
+            speed = sqrt(vel[0]**2+vel[1]**2)*3.6
+            gc.DrawText('Id:{}\n{:.0f}kph'.format(obj['callsign'],speed) ,50,0)
 
         gc.SetPen(gc.pen['white'])
         gc.DrawSymAC(gc,0,0,8,12)
@@ -196,6 +216,8 @@ class Stat(Control) :
             x -= self.x
             y -= self.y
             if x >= 0 and x < self.w and y >= 0 and y < self.h :
+                self.select_x = x-self.w/2
+                self.select_y = y-280
                 if self.click_func :
                     self.click_func(ClickEvent(self,x,y))
         return False
