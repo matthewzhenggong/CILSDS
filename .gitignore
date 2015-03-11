@@ -104,5 +104,5 @@ $RECYCLE.BIN/
 *.swp
 *~
 
-test.bat
+test*.bat
 
