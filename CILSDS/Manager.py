@@ -68,13 +68,12 @@ class Manager(wx.Panel):
         'NAV' : {'cur':1,
             'PNTS':[(23.0, 109.0, 5000),(23.0, 108.5, 5000),(23.2, 108.0, 5000),(22.2, 107.0, 5000)]
             },
-        'CONTACTS' : {'select':1,
-            'OBJS':[{'pos':(23.0, 107.0, 5000), 'vel':(0,300,0), 'type':'airplane', 'idf':'foe'},
-                    {'pos':(23.2, 108.0, 5000), 'vel':(0,-300,0), 'type':'airplane', 'idf':'friend'},
-                    {'pos':(23.0, 107.5, 5000), 'vel':(300,0,0), 'type':'airplane', 'idf':'unknown'},
-                    {'pos':(23.2, 107.5, 5000), 'vel':(0,-1000,0), 'type':'missile', 'idf':'friend'},
-                   ],
-            },
+        'CONTACTS' : [
+                {'pos':(23.0, 107.0, 5000), 'vel':(0,300,0), 'type':'airplane', 'idf':'foe'},
+                {'pos':(23.2, 108.0, 5000), 'vel':(0,-300,0), 'type':'airplane', 'idf':'friend'},
+                {'pos':(23.0, 107.5, 5000), 'vel':(300,0,0), 'type':'airplane', 'idf':'unknown'},
+                {'pos':(23.2, 107.5, 5000), 'vel':(0,-1000,0), 'type':'missile', 'idf':'friend'},
+            ],
         }
 
         self.using_panels = {}
@@ -109,6 +108,7 @@ class Manager(wx.Panel):
         self.cursor_step = 1
 
         self.dc = None
+        self.msgs = []
 
     def UpdateData(self, data):
         self.data.update(data)
@@ -271,4 +271,12 @@ class Manager(wx.Panel):
         frame_id = self.Body0.frame_id
         self.Body0.Layout(self.Body1.frame_id)
         self.Body1.Layout(frame_id)
+
+    def PushMessage(self, msg):
+        self.msgs.append(msg)
+
+    def GetAllMessages(self):
+        msgs = self.msgs
+        self.msgs = []
+        return msgs
 

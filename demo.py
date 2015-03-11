@@ -83,7 +83,6 @@ class MyFrame(wx.Frame):
                 self.aclink.settimeout(0.1)
                 self.aclink.bind(('',0))
                 sockname = self.aclink.getsockname()
-		self.log.info('CILSDS listening on '+sockname.__str__())
 
                 self.enable = True
                 self.running = True
@@ -104,6 +103,8 @@ class MyFrame(wx.Frame):
 
                     if args.debug :
                         self.log.setLevel(logging.DEBUG)
+
+		    self.log.debug('CILSDS listening on '+sockname.__str__())
 
                     if args.cwd :
                         os.chdir(args.cwd)
@@ -132,6 +133,9 @@ class MyFrame(wx.Frame):
                         self.log.info(dat['log'])
                 except :
                     pass
+                msgs = self.MFD.GetAllMessages()
+                if msgs :
+                    self.aclink.sendto(json.dumps(msgs),address)
             self.running = False
 
         def OnClose(self, evt):

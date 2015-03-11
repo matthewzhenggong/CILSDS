@@ -37,6 +37,7 @@ class Stat(Control) :
         self.vd = 0
         self.select_x = -1000
         self.select_y = -1000
+        self.try_select = False
 
     def RebuildPath(self) :
         if self.gc :
@@ -144,42 +145,58 @@ class Stat(Control) :
         select_obj = None
         select_circle = 5*5
         if self.contacts :
-            select = self.contacts['select']
-            for i,obj in enumerate(self.contacts['OBJS']) :
-                p = obj['pos']
-                y1 = -(p[0]-self.lat)*deg2m_lat*scale
-                x1 = (p[1]-self.lon)*deg2m_lon*scale
-                x = cos_heading*x1 + sin_heading*y1
-                y =-sin_heading*x1 + cos_heading*y1
-                idf = obj['idf']
-                if idf == 'foe' :
-                    gc.SetPen(gc.pen['red'])
-                elif idf == 'friend' :
-                    gc.SetPen(gc.pen['green'])
-                else :
-                    gc.SetPen(gc.pen['yellow'])
-                typ = obj['type']
-                if typ == 'missile' :
-                    gc.StrokeLines([(x-5,y),(x,y-5),(x+5,y)])
-                else :
-                    gc.StrokeLines([(x-5,y),(x-5,y-5),(x+5,y-5),(x+5,y)])
-                vel = obj['vel']
-                speed = sqrt(vel[0]**2+vel[1]**2)/300.0*5+5
-                if speed > 20 :
-                    speed = 20
-                hd = atan2(vel[1],vel[0])
-                gc.StrokeLines([(x,y),(x+speed*sin(-heading+hd),y-speed*cos(-heading+hd))])
-                if select == i :
-                    c = gc.CreatePath()
-                    c.AddCircle(x-1,y-1,12)
-                    gc.SetPen(gc.pen['lock'])
-                    gc.StrokePath(c)
-                cc = (x - self.select_x)**2 + (y - self.select_y)**2 
-                if cc < select_circle :
-                    select_obj = obj
-                    select_circle = cc
-                    select_x = x
-                    select_y = y
+            for i,obj in enumerate(self.contacts) :
+                if 'pos' in obj :
+                    p = obj['pos']
+                    y1 = -(p[0]-self.lat)*deg2m_lat*scale
+                    x1 = (p[1]-self.lon)*deg2m_lon*scale
+                    x = cos_heading*x1 + sin_heading*y1
+                    y =-sin_heading*x1 + cos_heading*y1
+                    if 'idf' in obj :
+                        idf = obj['idf']
+                    else :
+                        idf = 'unknown'
+                    if idf == 'foe' :
+                        gc.SetPen(gc.pen['red'])
+                    elif idf == 'friend' :
+                        gc.SetPen(gc.pen['green'])
+                    else :
+                        gc.SetPen(gc.pen['yellow'])
+                    if 'type' in obj :
+                        typ = obj['type']
+                    else :
+                        typ = 'unkown'
+                    if typ == 'missile' :
+                        gc.StrokeLines([(x-5,y),(x,y-5),(x+5,y)])
+                    else :
+                        gc.StrokeLines([(x-5,y),(x-5,y-5),(x+5,y-5),(x+5,y)])
+                    cc = (x - self.select_x)**2 + (y - self.select_y)**2 
+                    if cc < select_circle :
+                        select_obj = obj
+                        select_circle = cc
+                        select_x = x
+                        select_y = y
+                    if 'vel' in obj :
+                        vel = obj['vel']
+                        speed = sqrt(vel[0]**2+vel[1]**2)/300.0*5+5
+                        if speed > 20 :
+                            speed = 20
+                        hd = atan2(vel[1],vel[0])
+                        gc.StrokeLines([(x,y),(x+speed*sin(-heading+hd),y-speed*cos(-heading+hd))])
+                    if 'lock' in obj and obj['lock'] :
+                        if obj['lock'] >1 :
+                            gc.SetPen(gc.pen['lock2'])
+                        else :
+                            gc.SetPen(gc.pen['lock1'])
+                        c = gc.CreatePath()
+                        if typ == 'vehicle' :
+                            c.MoveToPoint(x,y-12*2)
+                            c.AddLineToPoint(x+12*1.73,y+12)
+                            c.AddLineToPoint(x-12*1.73,y+12)
+                            c.AddLineToPoint(x,y-12*2)
+                        else :
+                            c.AddCircle(x-1,y-1,12)
+                        gc.StrokePath(c)
 
         if select_obj :
             self.select_x = select_x
@@ -191,11 +208,24 @@ class Stat(Control) :
             y1 = -(p[0]-self.lat)*deg2m_lat
             x1 = (p[1]-self.lon)*deg2m_lon
             dist = sqrt(x1**2+y1**2)
-            vel = select_obj['vel']
-            vel[0] -= self.vn
-            vel[1] -= self.ve
-            relvel =-(vel[0]*y1+vel[1]*x1)/dist*3.6
-            gc.DrawText('Id:{}\nH{:.0f}\n{:.0f}kph'.format(select_obj['callsign'],p[2], relvel) ,50,0)
+            if 'vel' in select_obj :
+                vel = select_obj['vel']
+                vel[0] -= self.vn
+                vel[1] -= self.ve
+                relvel =-(vel[0]*y1+vel[1]*x1)/dist*3.6
+            else :
+                vel = [0,0]
+                vel[0] -= self.vn
+                vel[1] -= self.ve
+                relvel =-(vel[0]*y1+vel[1]*x1)/dist*3.6
+            if 'callsign' in select_obj :
+                callsign = select_obj['callsign']
+            else :
+                callsign = 'UNKOWN'
+            gc.DrawText('Id:{}\nH{:.0f}\n{:.0f}kph'.format(callsign,p[2], relvel) ,50,0)
+            if self.try_select :
+                self.parent.mgr.PushMessage({'name':'designate', 'callsign':callsign})
+        self.try_select = False
 
         gc.SetPen(gc.pen['white'])
         gc.DrawSymAC(gc,0,0,8,12)
@@ -227,6 +257,7 @@ class Stat(Control) :
             if x >= 0 and x < self.w and y >= 0 and y < self.h :
                 self.select_x = x-self.w/2
                 self.select_y = y-280
+                self.try_select = True
                 if self.click_func :
                     self.click_func(ClickEvent(self,x,y))
         return False
@@ -277,6 +308,10 @@ class TSD1(Instrument) :
         h=self.mgr.data['ASL']
         nav=self.mgr.data['NAV']
         contacts=self.mgr.data['CONTACTS']
+        try :
+            target = self.mgr.data['SMS']['target']
+        except :
+            target = ''
         vn=self.mgr.data['Vn']
         ve=self.mgr.data['Ve']
         vd=self.mgr.data['Vd']
@@ -290,6 +325,7 @@ class TSD1(Instrument) :
         self.ctrls['STA'].vn = vn
         self.ctrls['STA'].ve = ve
         self.ctrls['STA'].vd = vd
+        self.ctrls['STA'].target = target
 
     def DrawPreviewContent(self) :
         self.DrawContent()
