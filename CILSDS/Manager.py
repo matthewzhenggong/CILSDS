@@ -38,6 +38,9 @@ class Manager(wx.Panel):
         self.Bind(wx.EVT_KEY_UP, self.OnKeyUp)
 
         self.data = {
+        'Vn' : 37.5,
+        'Ve' : 87.5,
+        'Vd' : 7.5,
         'VC' : 287.5,
         'VG' : 625,
         'Ma' : 1.03,
@@ -108,8 +111,7 @@ class Manager(wx.Panel):
         self.dc = None
 
     def UpdateData(self, data):
-        for i in data :
-            self.data[i] = data[i]
+        self.data.update(data)
         self.Refresh(False)
 
     def RestoreInstrument(self, title, panel) :

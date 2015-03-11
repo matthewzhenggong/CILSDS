@@ -32,8 +32,11 @@ class Stat(Control) :
         self.lat = 23
         self.lon = 112
         self.alt = 5000
-        self.select_x = -1
-        self.select_y = -1
+        self.vn = 0
+        self.ve = 0
+        self.vd = 0
+        self.select_x = -1000
+        self.select_y = -1000
 
     def RebuildPath(self) :
         if self.gc :
@@ -182,11 +185,17 @@ class Stat(Control) :
             self.select_x = select_x
             self.select_y = select_y
             gc.SetPen(gc.pen['green'])
-            gc.SetBrush(gc.brush['back'])
+            gc.SetBrush(gc.brush['tab'])
             gc.DrawRectangle(50,0, 100,100)
-            vel = obj['vel']
-            speed = sqrt(vel[0]**2+vel[1]**2)*3.6
-            gc.DrawText('Id:{}\n{:.0f}kph'.format(obj['callsign'],speed) ,50,0)
+            p = select_obj['pos']
+            y1 = -(p[0]-self.lat)*deg2m_lat
+            x1 = (p[1]-self.lon)*deg2m_lon
+            dist = sqrt(x1**2+y1**2)
+            vel = select_obj['vel']
+            vel[0] -= self.vn
+            vel[1] -= self.ve
+            relvel =-(vel[0]*y1+vel[1]*x1)/dist*3.6
+            gc.DrawText('Id:{}\nH{:.0f}\n{:.0f}kph'.format(select_obj['callsign'],p[2], relvel) ,50,0)
 
         gc.SetPen(gc.pen['white'])
         gc.DrawSymAC(gc,0,0,8,12)
@@ -268,6 +277,9 @@ class TSD1(Instrument) :
         h=self.mgr.data['ASL']
         nav=self.mgr.data['NAV']
         contacts=self.mgr.data['CONTACTS']
+        vn=self.mgr.data['Vn']
+        ve=self.mgr.data['Ve']
+        vd=self.mgr.data['Vd']
 
         self.ctrls['STA'].heading = heading
         self.ctrls['STA'].nav = nav
@@ -275,6 +287,9 @@ class TSD1(Instrument) :
         self.ctrls['STA'].lat = lat
         self.ctrls['STA'].lon = lon
         self.ctrls['STA'].alt = h
+        self.ctrls['STA'].vn = vn
+        self.ctrls['STA'].ve = ve
+        self.ctrls['STA'].vd = vd
 
     def DrawPreviewContent(self) :
         self.DrawContent()

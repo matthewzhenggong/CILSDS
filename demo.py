@@ -96,17 +96,22 @@ class MyFrame(wx.Frame):
                     sys.path.append('.')
                     bin_path = path.abspath(path.dirname(sys.argv[0]))
                     sys.path.append(bin_path)
-                    parser = argparse.ArgumentParser(description='Parse and start aircraft-complex.')
+                    parser = argparse.ArgumentParser(prog='CILSDS',description='Cockpit integrative large screen display system')
                     parser.add_argument("--cmd", help="commander")
                     parser.add_argument("--cwd", help="workspace directory")
+                    parser.add_argument("--debug", action='store_true',help="loggin on debug level ")
                     args = parser.parse_args()
+
+                    if args.debug :
+                        self.log.setLevel(logging.DEBUG)
+
                     if args.cwd :
                         os.chdir(args.cwd)
-                        self.log.info('Change current work directory to '+args.cwd)
+                        self.log.debug('Change current work directory to '+args.cwd)
                     if args.cmd :
                         cmd = args.cmd+' --mfdport {}'.format(sockname[1])
                         self.ac = Popen(cmd, shell=False, bufsize=-1)
-                        self.log.info('Running '+cmd)
+                        self.log.debug('Running '+cmd)
                     else :
                         self.ac = None
                 except :
@@ -123,7 +128,6 @@ class MyFrame(wx.Frame):
                     dat = json.loads(dat)
                     if 'data' in dat :
                         self.MFD.UpdateData(dat['data'])
-                        pass
                     elif 'log' in dat :
                         self.log.info(dat['log'])
                 except :
