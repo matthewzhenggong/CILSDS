@@ -23,9 +23,10 @@ from FUEL import FUEL
 from ENG import ENG
 
 class Manager(wx.Panel):
-    def __init__(self, parent, log):
+    def __init__(self, parent, log, half=False):
         self.log = log
         wx.Panel.__init__(self, parent, -1)
+        self.half = half
         self.SetWindowStyle(wx.WANTS_CHARS)
         self.SetForegroundColour(wx.GREEN)
         self.SetBackgroundColour(wx.BLACK)
@@ -59,6 +60,7 @@ class Manager(wx.Panel):
         'fuelrate' : 0,
         'T' : 0,
         'mode' : 'AA1',
+        'cursor' : [0, 0, 0, 0, 0],
         'SMS' : {'GUN':182, 'CHAT':10, 'FLAT':20,  \
                  'pylons':{ 'firing': -1, 'RDY':4, \
                     'SRM' : [('AIM9',1), ('AIM9',11)], \
@@ -94,12 +96,17 @@ class Manager(wx.Panel):
                 'H2':Header2(self),
                 }
 
-        self.Body0 = Window(self,0, 0, 0, 640, 512, 3, \
-                ['EFI','SMS','FCS','HUD','DAS','ASR', 'H1'])
-        self.Body1 = Window(self,1, 640, 0, 640, 512, 4, \
-                ['TSD-1','TSD-2','FCS','HUD','DAS','ASR', 'H2'])
+        if self.half :
+            self.Body0 = Window(self,0, 0, 0, 640, 512, 2, \
+                    ['EFI','TSD-1','TFLIR','SMS','FUEL','ASR', 'H1'])
+            self.panels = [self.Body0]
+        else :
+            self.Body0 = Window(self,0, 0, 0, 640, 512, 3, \
+                    ['EFI','SMS','FCS','HUD','DAS','ASR', 'H1'])
+            self.Body1 = Window(self,1, 640, 0, 640, 512, 4, \
+                    ['TSD-1','TSD-2','FCS','HUD','DAS','ASR', 'H2'])
+            self.panels = [self.Body0, self.Body1]
 
-        self.panels = [self.Body0, self.Body1]
         self.ActivePanel = None
 
         self.clicking = False
@@ -107,12 +114,66 @@ class Manager(wx.Panel):
         self.cursor = [100,100]
         self.cursor_step = 1
 
+
+        self.cursor_press_cnt = 0
+        self.cursor_left_cnt = 0
+        self.cursor_right_cnt = 0
+        self.cursor_up_cnt = 0
+        self.cursor_down_cnt = 0
+
         self.dc = None
         self.msgs = []
 
     def UpdateData(self, data):
         self.data.update(data)
+        self.UpdateCursorFromData(self.data['cursor'])
         self.Refresh(False)
+
+    def UpdateCursorFromData(self, cursor):
+        if cursor[4] :
+            self.cursor_press_cnt += 1
+            if self.cursor_press_cnt == 6 :
+                self.cursor_press_cnt = 1
+                self.keyDown(wx.WXK_RETURN)
+        elif self.cursor_press_cnt != 0 :
+                self.cursor_step = 1
+                self.cursor_press_cnt = 0
+
+        if cursor[0] :
+            self.cursor_left_cnt += 1
+            if self.cursor_left_cnt == 4 :
+                self.cursor_left_cnt = 1
+                self.keyDown(wx.WXK_LEFT)
+        elif self.cursor_left_cnt != 0 :
+                self.cursor_step = 1
+                self.cursor_left_cnt = 0
+
+        if cursor[1] :
+            self.cursor_right_cnt += 1
+            if self.cursor_right_cnt == 4 :
+                self.cursor_right_cnt = 1
+                self.keyDown(wx.WXK_RIGHT)
+        elif self.cursor_right_cnt != 0 :
+                self.cursor_step = 1
+                self.cursor_right_cnt = 0
+
+        if cursor[2] :
+            self.cursor_up_cnt += 1
+            if self.cursor_up_cnt == 4 :
+                self.cursor_up_cnt = 1
+                self.keyDown(wx.WXK_UP)
+        elif self.cursor_up_cnt != 0 :
+                self.cursor_step = 1
+                self.cursor_up_cnt = 0
+
+        if cursor[3] :
+            self.cursor_down_cnt += 1
+            if self.cursor_down_cnt == 4 :
+                self.cursor_down_cnt = 1
+                self.keyDown(wx.WXK_DOWN)
+        elif self.cursor_down_cnt != 0 :
+                self.cursor_step = 1
+                self.cursor_down_cnt = 0
 
     def RestoreInstrument(self, title, panel) :
         if title in self.using_panels :
@@ -140,7 +201,10 @@ class Manager(wx.Panel):
         for i in self.panels :
             i.UpdateGC(self.gc)
 
-        self.width = 1280.0
+        if self.half :
+            self.width = 640.0
+        else :
+            self.width = 1280.0
         self.height = 512.0
         scalex = self.sz.width/self.width
         scaley = self.sz.height/self.height
@@ -217,6 +281,9 @@ class Manager(wx.Panel):
 
     def OnKeyDown(self, event):
         k = event.GetKeyCode()
+        self.keyDown(k)
+
+    def keyDown(self, k):
         if k in [wx.WXK_LEFT, wx.WXK_NUMPAD_LEFT, wx.WXK_NUMPAD4, ord('A')]:
             self.cursor[0] -= self.cursor_step
             self.AccelCursor()
@@ -264,6 +331,9 @@ class Manager(wx.Panel):
         gc.DrawText('%.3f'%self.enduring, 0,0)
 
     def SwapWindow(self, event):
+        if self.half :
+            return
+
         for (i,j) in itertools.izip(self.Body0.panels, self.Body1.panels) :
             tt = i.title
             i.SetInstrument(j.title)

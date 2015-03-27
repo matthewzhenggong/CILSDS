@@ -29,8 +29,8 @@ class ASR(Instrument) :
     def DrawContent(self) :
         gc = self.gc
         txt = 'NO IMAGE'
-        te = gc.GetTextExtent(txt)
         gc.SetFont(gc.font['default'])
+        te = gc.GetTextExtent(txt)
         gc.DrawText(txt,(self.w-te[0])/2, (self.h-te[1])/2)
 
     def DrawPreviewContent(self) :

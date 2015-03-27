@@ -205,9 +205,20 @@ class Header1(Instrument) :
         gc.DrawSymAC(gc,292,35,21,30)
 
         gc.SetFont(gc.font['cyan12'])
-        gc.DrawText('ICAWS',360,20)
-        gc.DrawText('AP',579,11)
-        gc.DrawText('AT',579,35)
+        try :
+            gc.DrawText(self.mgr.data['NAV']['MODE'],360,20)
+        except :
+            gc.DrawText('ICAWS',360,20)
+        try :
+            if self.mgr.data['NAV']['AP'] > 0.5 :
+                gc.DrawText('AP',579,11)
+        except :
+            gc.DrawText('MA',579,11)
+        try :
+            if self.mgr.data['NAV']['PF'] > 0.5 :
+                gc.DrawText('PF',579,35)
+        except :
+            pass
 
         gc.SetFont(gc.font['green10'])
         gc.DrawText('  10 0\nI 10 0\nE  0 0',125,10)

@@ -309,6 +309,21 @@ class WeaponManager(Control) :
         self.drawContent(True)
         self.gc.PopState()
 
+    def OnClick(self, x, y) :
+        if self.visable :
+            x -= self.x
+            y -= self.y
+            if x >= 0 and x < self.w and y >= 0 and y < self.h :
+                if abs(x-164) < 45 and abs(y-113-40-10) < 10 :
+                    self.parent.mgr.PushMessage({'name':'release', 'weapon':"missile"})
+                if x-164 < 45 and x-164 > 0 and abs(y-113-75-45) < 45 :
+                    self.parent.mgr.PushMessage({'name':'release', 'weapon':"flat"})
+                if x-164 >-45 and x-164 < 0 and abs(y-113-75-45) < 45 :
+                    self.parent.mgr.PushMessage({'name':'release', 'weapon':"chat"})
+                if self.click_func :
+                    self.click_func(ClickEvent(self,x,y))
+        return False
+
 class Doors(Control) :
     def __init__(self, parent) :
         Control.__init__(self, parent)

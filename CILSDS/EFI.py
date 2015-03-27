@@ -15,6 +15,8 @@ class ArtificialHorizon(Control) :
         self.heading = 3
         self.AoA=2
         self.AoS=1
+        self.GAMC=-1000
+        self.PHIC=-1000
 
     def RebuildPath(self) :
         if self.gc :
@@ -120,8 +122,13 @@ class ArtificialHorizon(Control) :
         gc.PopState()
         gc.StrokePath(self.sky_ladder)
 
+        if abs(self.GAMC)<pi/2 :
+            gc.SetPen(gc.pen['purple'])
+            gc.StrokeLine(-w/10,-self.GAMC*57.3*scale,w/10,-self.GAMC*57.3*scale)
+
         gc.PopState()
 
+        gc.SetPen(gc.pen['white'])
         gc.PushState()
         gc.Rotate(-180/57.3)
         for i in range(36) :
@@ -213,6 +220,9 @@ class Compass(Control) :
     def __init__(self, parent) :
         Control.__init__(self, parent)
         self.val = 0
+        self.SLG = 0
+        self.CTE = 0
+        self.PSIC = -1000
 
     def RebuildPath(self) :
         if self.gc :
@@ -250,6 +260,17 @@ class Compass(Control) :
             self.arrow_symbol = bs
 
             bs = gc.CreatePath()
+            bs.MoveToPoint(-5,-r)
+            bs.AddLineToPoint(5,-r)
+            bs.AddLineToPoint(5,-r+5)
+            bs.AddLineToPoint(3,-r+5)
+            bs.AddLineToPoint(0,-r+2)
+            bs.AddLineToPoint(-3,-r+5)
+            bs.AddLineToPoint(-5,-r+5)
+            bs.AddLineToPoint(-5,-r)
+            self.dir_symbol = bs
+
+            bs = gc.CreatePath()
             bs.MoveToPoint(r/5,0)
             bs.AddLineToPoint(r/5+1,0)
             bs.MoveToPoint(r*2/5,0)
@@ -279,6 +300,7 @@ class Compass(Control) :
         else :
             self.compass_symbol = None
             self.arrow_symbol = None
+            self.dir_symbol = None
             self.bias_symbol = None
 
     def DrawContent(self) :
@@ -314,9 +336,34 @@ class Compass(Control) :
 
         gc.SetPen(gc.pen['purple'])
         gc.StrokePath(self.arrow_symbol)
+        if abs(self.PSIC)<2*pi :
+            diff = self.PSIC-self.val/57.3
+            if diff > pi :
+                diff -= 2*pi
+            elif diff < -pi :
+                diff += 2*pi
+            gc.PushState()
+            gc.Rotate(diff)
+            gc.StrokePath(self.dir_symbol)
+            gc.PopState()
 
         gc.SetPen(gc.pen['big_purple'])
         gc.StrokePath(self.bias_symbol)
+
+        gc.SetPen(gc.pen['white'])
+        SLG = self.SLG*r/(5*100.0)
+        if SLG > r*3/5 :
+            SLG = r*3/5
+        elif SLG < -r*3/5 :
+            SLG =-r*3/5
+        gc.StrokeLine(-r-45, SLG, -r-15, SLG)
+
+        CTE = self.CTE*r/(5*100.0)
+        if CTE > r*3/5 :
+            CTE = r*3/5
+        elif CTE < -r*3/5 :
+            CTE =-r*3/5
+        gc.StrokeLine(CTE, -15, CTE, 15)
 
         txt = 'SLG'
         te = gc.GetTextExtent(txt)
@@ -372,6 +419,34 @@ class EFI(Instrument) :
         heading=self.mgr.data['heading']
         ROC=self.mgr.data['ROC']
 
+        try :
+            nav=self.mgr.data['NAV']
+            try :
+                SLG = nav['SLG']
+            except :
+                SLG = 0
+            try :
+                CTE = nav['CTE']
+            except :
+                CTE = 0
+            try :
+                GAMC = nav['GAMC']
+            except :
+                GAMC = -1000
+            try :
+                PHIC = nav['PHIC']
+            except :
+                PHIC = -1000
+            try :
+                PSIC = nav['PSIC']
+            except :
+                PSIC = -1000
+        except :
+            SLG = 0
+            CTE = 0
+            GAMC =-1000
+            PSIC =-1000
+            PHIC =-1000
 
         margin = 60
         ahw = 320-2*margin
@@ -395,10 +470,16 @@ class EFI(Instrument) :
         ah.heading = heading
         ah.AoA=AoA
         ah.AoS=AoS
+        ah.GAMC=GAMC
+        ah.PHIC=PHIC
 
         self.ctrls['V'].val = VC
         self.ctrls['H'].val = ASL
         self.ctrls['C'].val = heading
+        self.ctrls['C'].val = heading
+        self.ctrls['C'].SLG = SLG
+        self.ctrls['C'].CTE = CTE
+        self.ctrls['C'].PSIC = PSIC
 
     def DrawPreviewContent(self) :
         VC = self.mgr.data['VC']
