@@ -70,6 +70,9 @@ class Manager(wx.Panel):
         'NAV' : {'cur':1,
             'PNTS':[(23.0, 109.0, 5000),(23.0, 108.5, 5000),(23.2, 108.0, 5000),(22.2, 107.0, 5000)]
             },
+        'SENS' : {'infrWorkStatus':2,'RadarWorkStatus':3, \
+                'ESM_OpenFlag':1,'ESM_WorkModul':1,\
+                'ECM_OpenFlag':1,'ECM_WorkModul':1},
         'CONTACTS' : [
                 {'pos':(23.0, 107.0, 5000), 'vel':(0,300,0), 'type':'airplane', 'idf':'foe'},
                 {'pos':(23.2, 108.0, 5000), 'vel':(0,-300,0), 'type':'airplane', 'idf':'friend'},

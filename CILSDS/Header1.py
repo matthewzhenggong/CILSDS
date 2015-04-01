@@ -234,3 +234,35 @@ class Header1(Instrument) :
         gc.StrokeLine(170,6+36,190,6+36)
         gc.StrokeLine(170,6+48,190,6+48)
 
+        gc.SetFont(gc.font['cyan12'])
+        if 'SENS' in self.mgr.data :
+            sen = self.mgr.data['SENS']
+            if 'infrWorkStatus' in sen :
+                try :
+                    txt = {1:'IR_W',2:'IR_N',3:'IR_T'}[sen['infrWorkStatus']]
+                except :
+                    txt = 'IR'
+                gc.DrawText(txt, 340, 40)
+
+            if 'RadarWorkStatus' in sen :
+                try :
+                    txt = {0:'RWS',1:'TWS',2:'TAS',3:'STT',4:'MTT'}[sen['RadarWorkStatus']]
+                except :
+                    txt = 'RWS'
+                gc.DrawText(txt, 380, 40)
+
+            if 'ESM_OpenFlag' in sen and 'ESM_WorkModul' in sen and sen['ESM_OpenFlag'] :
+                try :
+                    txt = {0:'ESM',1:'HGESM'}[sen['ESM_WorkModul']]
+                except :
+                    txt = 'ESM'
+                gc.DrawText(txt, 420, 40)
+
+            if 'ECM_OpenFlag' in sen and 'ECM_WorkModul' in sen and sen['ECM_OpenFlag'] :
+                try :
+                    txt = {0:'ECM AUTO',1:'ECM MANUAL'}[sen['ECM_WorkModul']]
+                except :
+                    txt = 'ECM'
+                gc.DrawText(txt, 480, 40)
+
+

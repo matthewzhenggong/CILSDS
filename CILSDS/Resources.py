@@ -31,6 +31,9 @@ def CreateResources(gc):
     gc.pen['white1'] = gc.CreatePen(wx.Pen(wx.WHITE, 1))
     gc.pen['white1.5'] = gc.CreatePen(wx.Pen(wx.WHITE, 1.5))
     gc.pen['big_purple'] = gc.CreatePen(wx.Pen(wx.Colour(0xCC,0x00,0xFF), 7))
+    gc.pen['purple3'] = gc.CreatePen(wx.Pen(wx.Colour(0xCC,0x44,0xFF), 2))
+    gc.pen['purple2'] = gc.CreatePen(wx.Pen(wx.Colour(0xCC,0x22,0xFF), 2))
+    gc.pen['orange'] = gc.CreatePen(wx.Pen(wx.Colour(0xFF,0x55,0x00), 2))
     gc.pen['purple'] = gc.CreatePen(wx.Pen(wx.Colour(0xCC,0x00,0xFF), 2))
     gc.pen['white_sto'] = gc.CreatePen(wx.Pen(wx.WHITE, 2, wx.PENSTYLE_SHORT_DASH ))
     gc.pen['cursor'] = gc.pen['green']
@@ -49,7 +52,8 @@ def CreateResources(gc):
     gc.font = {}
     font = [wx.Font(12, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD),
             wx.Font(20, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD),
-            wx.Font(10, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL) ]
+            wx.Font(10, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL),
+            wx.Font(8, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)]
     gc.font['default'] = gc.CreateFont(font[0], wx.WHITE)
     gc.font['button'] = gc.CreateFont(font[0], wx.CYAN)
     gc.font['tab'] = gc.font['button']
@@ -62,6 +66,7 @@ def CreateResources(gc):
     gc.font['menu_text'] = gc.CreateFont(font[0], wx.CYAN)
     gc.font['white10'] = gc.CreateFont(font[2], wx.WHITE)
     gc.font['green10'] = gc.CreateFont(font[2], wx.GREEN)
+    gc.font['small'] = gc.CreateFont(font[2], wx.Colour(0xFF,0xFF,0xFF, 0x7E))
 
     gc.symbol_ac = [(0.015102934, -1.000386053),
 (0.202795457, -0.594298431),

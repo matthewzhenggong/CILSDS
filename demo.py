@@ -65,13 +65,16 @@ class MyFrame(wx.Frame):
                 wx.Frame.__init__(self, parent, ID, title, pos, size, style)
 
                 self.panel = wx.Panel(self,-1)
-                self.panel.SetForegroundColour(wx.GREEN)
-                self.panel.SetBackgroundColour(wx.BLACK)
+                #self.panel.SetForegroundColour(wx.GREEN)
+                #self.panel.SetBackgroundColour(wx.BLACK)
 
                 self.log_txt = wx.TextCtrl(self.panel, -1, "", size=(300,100), style=wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_RICH2)
                 self.log_txt.SetFont(wx.Font(9, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
                 self.log_txt.SetForegroundColour(wx.GREEN)
                 self.log_txt.SetBackgroundColour(wx.BLACK)
+
+                self.btn_save = wx.Button(self.panel, -1, 'Save')
+                self.btn_cls = wx.Button(self.panel, -1, 'Clear')
 
                 self.log = logging.getLogger('scene')
                 self.log_handle = logging.StreamHandler(RedirectText(self.log_txt))
@@ -92,6 +95,8 @@ class MyFrame(wx.Frame):
 
                 self.Bind(wx.EVT_SIZE, self.OnSize)
                 self.Bind(wx.EVT_CLOSE, self.OnClose)
+                self.Bind(wx.EVT_BUTTON, self.OnClsLog, self.btn_cls)
+                self.Bind(wx.EVT_BUTTON, self.OnSavLog, self.btn_save)
 
                 self.aclink = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 self.aclink.settimeout(0.1)
@@ -170,7 +175,20 @@ class MyFrame(wx.Frame):
             h = scale*1024
             self.MFD.SetSize((w,h))
             self.log_txt.SetPosition((0, h))
-            self.log_txt.SetSize((sz.width,sz.height-h))
+            self.log_txt.SetSize((sz.width,sz.height-h-20))
+            self.btn_save.SetSize((50,20))
+            self.btn_save.SetPosition((0, sz.height-20))
+            self.btn_cls.SetSize((50,20))
+            self.btn_cls.SetPosition((50, sz.height-20))
+
+        def OnClsLog(self, evt):
+            self.log_txt.Clear()
+
+        def OnSavLog(self, evt):
+            dlg = wx.FileDialog(self, message="Save file as ...", defaultDir=os.getcwd(), 
+            defaultFile="log", wildcard="Text files (*.txt)|*.txt", style=wx.SAVE)
+            if dlg.ShowModal() == wx.ID_OK:
+                self.log_txt.SaveFile(dlg.GetPath())
 
 if __name__ == '__main__' :
         app = wx.App(False)
