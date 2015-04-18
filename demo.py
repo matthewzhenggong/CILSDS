@@ -19,6 +19,9 @@ import socket
 import json
 import traceback
 
+from wx.lib.newevent import NewEvent
+LogEvent, EVT_LOG = NewEvent()
+
 log = logging.getLogger('scene')
 
 
@@ -45,13 +48,11 @@ class RedirectInfo(object):
 
 
 class RedirectText(object):
+    def __init__(self, parent):
+        self.parent = parent
 
-  def __init__(self, aWxTextCtrl):
-    self.out = aWxTextCtrl
-
-  def write(self, string):
-    self.out.AppendText(string)
-
+    def write(self, string):
+        wx.PostEvent(self.parent, LogEvent(log=string))
 
 class MyFrame(wx.Frame):
 
@@ -94,17 +95,17 @@ class MyFrame(wx.Frame):
     self.btn_cls = wx.Button(self.panel, -1, 'Clear')
 
     self.log = logging.getLogger('scene')
-    self.log_handle = logging.StreamHandler(RedirectText(self.log_txt))
+    self.log_handle = logging.StreamHandler(RedirectText(self))
     self.log_handle.setFormatter(logging.Formatter('%(asctime)s:%(message)s'))
     self.log.addHandler(self.log_handle)
-    # redirect stdout to log
-    sys.stdout = RedirectInfo()
-    sys.stderr = RedirectError()
 
     if args.debug:
       self.log.setLevel(logging.DEBUG)
     else:
       self.log.setLevel(logging.INFO)
+      # redirect stdout to log
+      sys.stdout = RedirectInfo()
+      sys.stderr = RedirectError()
 
     self.log.info('Starting...')
 
@@ -114,6 +115,7 @@ class MyFrame(wx.Frame):
     self.Bind(wx.EVT_CLOSE, self.OnClose)
     self.Bind(wx.EVT_BUTTON, self.OnClsLog, self.btn_cls)
     self.Bind(wx.EVT_BUTTON, self.OnSavLog, self.btn_save)
+    self.Bind(EVT_LOG, self.OnLog)
 
     self.aclink = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     self.aclink.settimeout(0.1)
@@ -148,6 +150,9 @@ class MyFrame(wx.Frame):
     except:
       traceback.print_exc()
       self.ac = None
+
+  def OnLog(self, event) :
+      self.log_txt.AppendText(event.log)
 
   def run(self):
     while self.enable:
