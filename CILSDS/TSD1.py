@@ -192,6 +192,8 @@ class Stat(Control):
             select_circle = cc
             select_x = x
             select_y = y
+          if 'Threat' in obj:
+            gc.DrawText('[{}]'.format(obj['Threat']), x + 12, y - 30)
           if 'callsign' in obj:
             gc.DrawText(obj['callsign'], x + 12, y - 20)
           if 'vel' in obj:
